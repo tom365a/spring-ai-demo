@@ -1,4 +1,4 @@
-# 星河商城智能客服 Demo（Spring AI）
+# 智能客服 Demo（Spring AI）
 
 基于 **Spring Boot 3 + Spring AI** 的可运行 Demo，实现：
 

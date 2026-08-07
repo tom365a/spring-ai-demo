@@ -91,7 +91,7 @@
 
 | 元素 | 行为 |
 |------|------|
-| 标题 | 「星河商城 · Agent 管理」 |
+| 标题 | 「Agent 管理」 |
 | Runtime 徽标 | 调 `GET /api/v1/debug/config` 扩展字段或独立 `GET /api/v1/admin/runtime`（可选，见 §6）；显示 `configRuntime: on/off` |
 | 角色下拉 | `viewer` / `editor` / `publisher` → 写入 `sessionStorage.adminRole`，后续请求带 `X-Admin-Role` |
 | 链接 | 「客服演示」→ `/` |
