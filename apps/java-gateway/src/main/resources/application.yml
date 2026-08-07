@@ -1,0 +1,66 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: java-gateway
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 20MB
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/customer_service}
+    username: ${SPRING_DATASOURCE_USERNAME:cs}
+    password: ${SPRING_DATASOURCE_PASSWORD:cs123}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  ai:
+    openai:
+      api-key: ${SPRING_AI_OPENAI_API_KEY:${LLM_API_KEY:sk-xxx}}
+      base-url: ${SPRING_AI_OPENAI_BASE_URL:${LLM_BASE_URL:https://api.openai.com}}
+      chat:
+        options:
+          model: ${LLM_MODEL:gpt-4o-mini}
+          temperature: 0.2
+      embedding:
+        options:
+          model: ${EMBEDDING_MODEL:text-embedding-3-small}
+    vectorstore:
+      pgvector:
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1536
+        initialize-schema: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  api-key: ${APP_API_KEY:demo-api-key}
+  upload-dir: ${APP_UPLOAD_DIR:./uploads}
+  knowledge-sample-dir: ${APP_KNOWLEDGE_SAMPLE_DIR:../../samples/knowledge}
+  session-window-size: ${SESSION_WINDOW_SIZE:10}
+  route-confidence-threshold: ${ROUTE_CONFIDENCE_THRESHOLD:0.55}
+  rag:
+    top-k: ${RAG_TOP_K:5}
+    score-threshold: ${RAG_SCORE_THRESHOLD:0.55}
+  mcp:
+    enabled: ${MCP_ENABLED:true}
+    http-base-url: ${APP_MCP_HTTP_BASE_URL:http://localhost:3100}
+  vector:
+    backend: ${APP_VECTOR_BACKEND:pgvector}
+  agent-config:
+    enabled: ${APP_AGENT_CONFIG_ENABLED:false}
+    seed-on-startup: true
+    fallback-to-legacy: true
+    prompt-max-length: 20000
+    trial-session-ttl-minutes: 60
+
+logging:
+  level:
+    com.demo.cs: INFO

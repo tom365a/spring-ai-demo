@@ -1,0 +1,13 @@
+.env
+uploads/**
+!uploads/.gitkeep
+**/uploads/
+!**/uploads/.gitkeep
+**/target/
+**/__pycache__/
+**/.venv/
+.idea/
+*.iml
+.DS_Store
+*.log
+*.jar.original

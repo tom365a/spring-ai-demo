@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: customer_service
+      POSTGRES_USER: cs
+      POSTGRES_PASSWORD: cs123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./apps/java-gateway/src/main/resources/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cs -d customer_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  knowledge-mcp:
+    build: ./mcp-servers/knowledge-mcp
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./samples/knowledge:/data/knowledge:ro
+
+  java-gateway:
+    build: ./apps/java-gateway
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_service
+      SPRING_DATASOURCE_USERNAME: cs
+      SPRING_DATASOURCE_PASSWORD: cs123
+      SPRING_AI_OPENAI_API_KEY: ${LLM_API_KEY:-sk-xxx}
+      SPRING_AI_OPENAI_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com}
+      APP_MCP_HTTP_BASE_URL: http://knowledge-mcp:3100
+      APP_KNOWLEDGE_SAMPLE_DIR: /app/samples/knowledge
+      APP_UPLOAD_DIR: /app/uploads
+      MCP_ENABLED: ${MCP_ENABLED:-true}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./samples/knowledge:/app/samples/knowledge:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      knowledge-mcp:
+        condition: service_started
+
+volumes:
+  pgdata:

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>星河商城 · 智能客服</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg0:#0f1c24; --bg1:#16303a; --accent:#2ec4b6; --accent2:#ff9f1c;
+      --text:#e8f1f2; --muted:#9bb4b8; --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;font-family:"Noto Sans SC","DM Sans",sans-serif;color:var(--text);
+      background:radial-gradient(1000px 500px at 10% -10%,#1f6f78 0%,transparent 55%),linear-gradient(160deg,var(--bg0),var(--bg1))}
+    .shell{max-width:1100px;margin:0 auto;padding:28px 20px 40px;display:grid;gap:16px}
+    .brand{font-family:"DM Sans",sans-serif;font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;margin:0}
+    .brand span{color:var(--accent)}
+    .sub{color:var(--muted);margin:6px 0 0;font-size:.95rem}
+    .meta{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted)}
+    .chip strong{color:var(--accent)}
+    .layout{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+    @media (max-width:900px){.layout{grid-template-columns:1fr}}
+    .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;min-height:540px;display:flex;flex-direction:column;overflow:hidden}
+    .panel h2{margin:0;padding:14px 16px;font-size:.95rem;border-bottom:1px solid var(--line);color:var(--muted);font-weight:500}
+    #messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:92%;padding:10px 12px;border-radius:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;font-size:.95rem}
+    .msg.user{align-self:flex-end;background:linear-gradient(135deg,#2a9d8f,#1f7a72)}
+    .msg.assistant{align-self:flex-start;background:rgba(0,0,0,.28);border:1px solid var(--line)}
+    .msg .tag{display:block;font-size:11px;color:var(--accent2);margin-bottom:4px}
+    .composer{border-top:1px solid var(--line);padding:12px;display:grid;gap:10px}
+    textarea{width:100%;min-height:72px;resize:vertical;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);padding:10px 12px;font:inherit}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    button,.file-btn{border:0;border-radius:999px;padding:9px 16px;font:inherit;cursor:pointer;background:var(--accent);color:#06241f;font-weight:600}
+    button.secondary{background:transparent;color:var(--text);border:1px solid var(--line)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .file-btn{display:inline-flex;background:transparent;color:var(--text);border:1px solid var(--line)}
+    #file{display:none}
+    .side{padding:12px 16px 16px;overflow:auto;display:grid;gap:12px}
+    .side pre{margin:0;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:10px;font-size:12px;overflow:auto;max-height:180px;color:#cde7ea}
+    .hint{color:var(--muted);font-size:12px;line-height:1.5}
+    .examples{display:flex;flex-wrap:wrap;gap:6px}
+    .examples button{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--line);font-weight:500;font-size:12px;padding:6px 10px}
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:end">
+    <div>
+      <h1 class="brand">星河<span>商城</span> · 智能客服</h1>
+      <p class="sub">Spring AI · Supervisor + 多子 Agent · RAG / Tool / MCP / 多模态</p>
+    </div>
+    <div class="meta">
+      <div class="chip">模式 <strong>multi-agent</strong></div>
+      <div class="chip">会话 <strong id="sid">-</strong></div>
+      <div class="chip">MCP <strong id="mcp">-</strong></div>
+      <a class="chip" href="/admin.html" style="color:inherit;text-decoration:none">Agent 管理</a>
+    </div>
+  </header>
+  <div class="layout">
+    <section class="panel">
+      <h2>对话</h2>
+      <div id="messages"></div>
+      <div class="composer">
+        <div class="examples">
+          <button type="button" data-q="国内订单退货时效是多久？">退货政策</button>
+          <button type="button" data-q="帮我查一下订单 ORD20260730001">查订单</button>
+          <button type="button" data-q="我想取消订单 ORD20260730001">取消订单</button>
+          <button type="button" data-q="物流 SF1234567890 到哪了？">查物流</button>
+          <button type="button" data-q="包裹破损了，帮我开个工单">开工单</button>
+        </div>
+        <textarea id="input" placeholder="输入问题，可附带图片…"></textarea>
+        <div class="row">
+          <label class="file-btn">上传图片<input id="file" type="file" accept="image/*" /></label>
+          <span class="hint" id="fileName">未选择文件</span>
+          <div style="flex:1"></div>
+          <button class="secondary" id="newSession" type="button">新会话</button>
+          <button id="send" type="button">发送</button>
+        </div>
+      </div>
+    </section>
+    <aside class="panel">
+      <h2>调试面板</h2>
+      <div class="side">
+        <div><div class="hint">最近事件</div><pre id="debug">等待对话…</pre></div>
+        <div><div class="hint">知识库</div><pre id="docs">-</pre></div>
+        <div><div class="hint">MCP 工具</div><pre id="mcpTools">-</pre></div>
+        <p class="hint">用户 u_001 · 订单 ORD20260730001（待发货可取消）。取消需二次确认后再点发送。</p>
+      </div>
+    </aside>
+  </div>
+</div>
+<script>
+const API="";
+let sessionId=null, userId="u_001", attachmentIds=[], pendingConfirm=null;
+const messagesEl=document.getElementById("messages");
+const debugEl=document.getElementById("debug");
+const inputEl=document.getElementById("input");
+
+function addMsg(role,text,tag){
+  const div=document.createElement("div");
+  div.className="msg "+role;
+  if(tag){const t=document.createElement("div");t.className="tag";t.textContent=tag;div.appendChild(t)}
+  div.appendChild(document.createTextNode(text));
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
+  return div;
+}
+
+async function createSession(){
+  const res=await fetch(API+"/api/v1/sessions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,channel:"web"})});
+  const body=await res.json();
+  const data=body.data||body;
+  sessionId=data.id;
+  document.getElementById("sid").textContent=sessionId;
+  messagesEl.innerHTML="";
+  addMsg("assistant","您好，我是星河商城智能客服。可咨询退换货政策、查订单物流，或上传破损图片开工单。");
+  attachmentIds=[]; pendingConfirm=null;
+  document.getElementById("fileName").textContent="未选择文件";
+}
+
+async function refreshMeta(){
+  try{
+    const cfg=(await (await fetch(API+"/api/v1/debug/config")).json()).data || {};
+    document.getElementById("mcp").textContent=cfg.mcpEnabled?"on":"off";
+  }catch{document.getElementById("mcp").textContent="?"}
+  try{
+    const docs=(await (await fetch(API+"/api/v1/knowledge/docs")).json());
+    document.getElementById("docs").textContent=JSON.stringify(docs.data||docs,null,2);
+  }catch(e){document.getElementById("docs").textContent=String(e)}
+  try{
+    const tools=(await (await fetch(API+"/api/v1/mcp/tools")).json());
+    document.getElementById("mcpTools").textContent=JSON.stringify(tools.data||tools,null,2);
+  }catch{document.getElementById("mcpTools").textContent="MCP 不可用"}
+}
+
+async function send(){
+  const text=inputEl.value.trim();
+  if(!text && !attachmentIds.length) return;
+  if(!sessionId) await createSession();
+  addMsg("user", text||"[图片消息]");
+  inputEl.value="";
+  document.getElementById("send").disabled=true;
+  const body={sessionId,userId,text:text||"请结合图片帮我处理售后",attachmentIds:[...attachmentIds]};
+  if(pendingConfirm){body.confirm=true;body.confirmPayload=pendingConfirm;pendingConfirm=null}
+  const events=[];
+  let bubble=null, answer="";
+  try{
+    const res=await fetch(API+"/api/v1/chat/stream",{method:"POST",headers:{"Content-Type":"application/json","Accept":"text/event-stream"},body:JSON.stringify(body)});
+    const reader=res.body.getReader();
+    const decoder=new TextDecoder();
+    let buffer="";
+    while(true){
+      const {value,done}=await reader.read();
+      if(done) break;
+      buffer+=decoder.decode(value,{stream:true});
+      const parts=buffer.split("\n\n");
+      buffer=parts.pop();
+      for(const part of parts){
+        const line=part.split("\n").find(l=>l.startsWith("data:"));
+        if(!line) continue;
+        let ev; try{ev=JSON.parse(line.slice(5).trim())}catch{ev={event:"raw",raw:line}}
+        events.push(ev);
+        if(ev.event==="token"){
+          answer+=(ev.text||"");
+          if(!bubble) bubble=addMsg("assistant","");
+          bubble.textContent=answer;
+        }
+        if(ev.event==="confirm_required"){
+          pendingConfirm=ev.confirmationPayload;
+          if(ev.answer && !answer) addMsg("assistant", ev.answer, "需确认：再次发送以确认");
+        }
+        if(ev.event==="final" && ev.answer && !answer){
+          answer=ev.answer;
+          addMsg("assistant", answer, ev.agentName?("agent:"+ev.agentName):"");
+        }
+      }
+    }
+    debugEl.textContent=JSON.stringify(events.slice(-15),null,2);
+    attachmentIds=[]; document.getElementById("fileName").textContent="未选择文件";
+    refreshMeta();
+  }catch(e){addMsg("assistant","请求失败: "+e)}
+  finally{document.getElementById("send").disabled=false}
+}
+
+document.getElementById("send").onclick=send;
+document.getElementById("newSession").onclick=createSession;
+document.querySelectorAll(".examples button").forEach(btn=>btn.onclick=()=>{inputEl.value=btn.dataset.q});
+document.getElementById("file").onchange=async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  if(!sessionId) await createSession();
+  const fd=new FormData(); fd.append("file",file); fd.append("sessionId",sessionId);
+  const res=await fetch(API+"/api/v1/attachments",{method:"POST",body:fd});
+  const body=await res.json(); const data=body.data||body;
+  attachmentIds=[data.id];
+  document.getElementById("fileName").textContent=data.originalName+" ("+data.id+")";
+};
+inputEl.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+(async()=>{
+  await createSession();
+  try{await fetch(API+"/api/v1/knowledge/bootstrap",{method:"POST"})}catch{}
+  await refreshMeta();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:cs;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+  ai:
+    vectorstore:
+      pgvector:
+        initialize-schema: false
+
+app:
+  mcp:
+    enabled: false
+  vector:
+    backend: simple
+  knowledge-sample-dir: ../../samples/knowledge
+  agent-config:
+    enabled: ${APP_AGENT_CONFIG_ENABLED:false}
+    seed-on-startup: true
+    fallback-to-legacy: true
+    prompt-max-length: 20000
+    trial-session-ttl-minutes: 60
+
+logging:
+  level:
+    com.demo.cs: DEBUG
