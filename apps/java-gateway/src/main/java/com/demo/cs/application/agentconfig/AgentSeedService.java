@@ -64,6 +64,7 @@ public class AgentSeedService implements ApplicationRunner {
                     ensurePublished("chitchat");
                     ensurePublished("supervisor");
                 }
+                ensureDefectComp();
             }
             publishService.reloadRegistryFromDb();
             log.info("DefinitionRegistry loaded {} enabled agents", registry.allEnabled().size());
@@ -150,6 +151,37 @@ public class AgentSeedService implements ApplicationRunner {
         return worker("vision", "视觉理解", "图片理解与二次路由建议",
                 "agent_vision.md", null,
                 List.of(), false, true, List.of(), false, 1, 40);
+    }
+
+    private void ensureDefectComp() {
+        if (agentRepo.findByCode("defect_comp").isEmpty()) {
+            log.info("Seeding defect_comp agent...");
+            createAndPublish(defectComp());
+        } else {
+            ensurePublished("defect_comp");
+        }
+    }
+
+    private AgentDefinition defectComp() {
+        return worker("defect_comp", "瑕疵补偿", "商品瑕疵/破损补偿引导与申请",
+                "agent_defect_comp.md", null,
+                List.of(
+                        "ask_for_defect_image",
+                        "ask_for_defect_order",
+                        "ask_for_sub_order",
+                        "xcbc_route",
+                        "confirm_as_order_callback",
+                        "aggre_as_order_callback",
+                        "reject_as_order_callback",
+                        "user_value_router",
+                        "low_user_value_callback",
+                        "xcbc_process_callback",
+                        "xcbc_sub_order_route",
+                        "apply_after_sale_success"
+                ),
+                false, false,
+                List.of("xcbc_sub_order_route", "confirm_as_order_callback", "aggre_as_order_callback", "reject_as_order_callback"),
+                true, 0, 70);
     }
 
     private AgentDefinition chitchat() {

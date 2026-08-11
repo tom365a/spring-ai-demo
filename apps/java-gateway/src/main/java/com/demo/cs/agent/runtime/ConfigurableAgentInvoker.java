@@ -6,6 +6,7 @@ import com.demo.cs.agent.model.AgentModels.RouteDecision;
 import com.demo.cs.agent.model.AgentModels.Slots;
 import com.demo.cs.agent.model.AgentModels.SubAgentRequest;
 import com.demo.cs.agent.model.AgentModels.SubAgentResult;
+import com.demo.cs.agent.model.AgentModels.ToolCallRecord;
 import com.demo.cs.application.agentconfig.model.AgentDefinition;
 import com.demo.cs.application.knowledge.KnowledgeService;
 import com.demo.cs.config.AppProperties;
@@ -14,6 +15,7 @@ import com.demo.cs.domain.CsSession;
 import com.demo.cs.infrastructure.catalog.LocalToolCatalog;
 import com.demo.cs.infrastructure.mcp.McpBridgeClient;
 import com.demo.cs.infrastructure.persistence.CsAgentRouteLogRepository;
+import com.demo.cs.infrastructure.tools.DefectCompensationTools;
 import com.demo.cs.infrastructure.tools.OrderTicketTools;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,6 +55,7 @@ public class ConfigurableAgentInvoker {
     private final KnowledgeService knowledgeService;
     private final McpBridgeClient mcpClient;
     private final OrderTicketTools orderTicketTools;
+    private final DefectCompensationTools defectCompensationTools;
     private final CsAgentRouteLogRepository routeLogRepo;
     private final AppProperties props;
 
@@ -67,6 +70,7 @@ public class ConfigurableAgentInvoker {
             KnowledgeService knowledgeService,
             McpBridgeClient mcpClient,
             OrderTicketTools orderTicketTools,
+            DefectCompensationTools defectCompensationTools,
             CsAgentRouteLogRepository routeLogRepo,
             AppProperties props
     ) {
@@ -80,6 +84,7 @@ public class ConfigurableAgentInvoker {
         this.knowledgeService = knowledgeService;
         this.mcpClient = mcpClient;
         this.orderTicketTools = orderTicketTools;
+        this.defectCompensationTools = defectCompensationTools;
         this.routeLogRepo = routeLogRepo;
         this.props = props;
     }
@@ -159,6 +164,7 @@ public class ConfigurableAgentInvoker {
         ToolCallback[] tools = toolBindingFactory.resolve(def.tools());
 
         orderTicketTools.setSessionId(request.sessionId());
+        defectCompensationTools.setSessionId(request.sessionId());
         try {
             var promptSpec = chatClientBuilder.build().prompt().system(system);
             if (enableVision && request.attachments() != null && !request.attachments().isEmpty()) {
@@ -184,11 +190,96 @@ public class ConfigurableAgentInvoker {
             return new SubAgentResult(agentCode, raw, citations, List.of(), false, null, null, null, null);
         } catch (Exception e) {
             log.warn("ConfigurableAgentInvoker handle failed for {}: {}", agentCode, e.getMessage());
+            if ("defect_comp".equals(agentCode)) {
+                return defectCompHeuristic(request);
+            }
             return SubAgentResult.simple(agentCode,
                     "服务暂时不可用（" + e.getClass().getSimpleName() + "）。请检查 LLM_API_KEY / base-url 后重试。");
         } finally {
             orderTicketTools.clearSessionId();
+            defectCompensationTools.clearSessionId();
         }
+    }
+
+    /** LLM 不可用时，按瑕疵补偿工作流演示调用 mock 工具。 */
+    private SubAgentResult defectCompHeuristic(SubAgentRequest request) {
+        String text = request.text() != null ? request.text() : "";
+        String userId = request.userId() != null ? request.userId() : "u_001";
+        boolean hasImage = request.attachments() != null && !request.attachments().isEmpty();
+        String imageRef = hasImage ? request.attachments().get(0).id() : "";
+        Matcher orderMatcher = ORDER_PATTERN.matcher(text);
+        String orderId = orderMatcher.find() ? orderMatcher.group() : null;
+        boolean looksDefect = text.contains("瑕疵") || text.contains("破损") || text.contains("污渍")
+                || text.contains("做工") || text.contains("补偿") || text.contains("洞") || text.contains("坏");
+
+        List<ToolCallRecord> toolCalls = new ArrayList<>();
+        try {
+            if (!looksDefect && !hasImage && orderId == null) {
+                return SubAgentResult.simple("defect_comp",
+                        "当前问题似乎不是瑕疵补偿，请回到主助手继续咨询。");
+            }
+            if (!hasImage && !text.contains("已上传") && !text.contains("图片")) {
+                String raw = defectCompensationTools.askForDefectImage(userId, "false", "");
+                toolCalls.add(toolCall("ask_for_defect_image", Map.of("userId", userId, "hasImage", false), raw));
+                return new SubAgentResult("defect_comp",
+                        "收到，我来帮您处理瑕疵补偿。请先上传一张能清晰看到瑕疵的图片。\n\n（工具）" + raw,
+                        List.of(), toolCalls, false, null, null, null, null);
+            }
+            String imgTool = defectCompensationTools.askForDefectImage(userId, "true",
+                    imageRef.isBlank() ? "user_provided" : imageRef);
+            toolCalls.add(toolCall("ask_for_defect_image", Map.of("userId", userId, "hasImage", true), imgTool));
+
+            String orderTool = defectCompensationTools.askForDefectOrder(userId,
+                    orderId != null ? orderId : "",
+                    imageRef.isBlank() ? "user_provided" : imageRef);
+            toolCalls.add(toolCall("ask_for_defect_order",
+                    Map.of("userId", userId, "orderId", orderId != null ? orderId : ""), orderTool));
+
+            JsonNode orderNode = objectMapper.readTree(orderTool);
+            if (!orderNode.path("found").asBoolean(false)) {
+                String subAsk = defectCompensationTools.askForSubOrder(userId, "未匹配到订单");
+                toolCalls.add(toolCall("ask_for_sub_order", Map.of("userId", userId), subAsk));
+                return new SubAgentResult("defect_comp",
+                        "图片已收到，但未匹配到订单。请提供子订单号继续。\n\n（工具）" + subAsk,
+                        List.of(), toolCalls, false, null, null, null, null);
+            }
+
+            String subOrderId = orderNode.path("subOrderId").asText("SUB-UNKNOWN");
+            if (orderNode.path("needConfirm").asBoolean(false)
+                    && !(text.contains("确认") || text.contains("是的") || text.contains("对"))) {
+                return new SubAgentResult("defect_comp",
+                        "已为您定位到子订单 " + subOrderId + "。请确认是否使用该单据申请瑕疵补偿？回复「确认」继续。\n\n（工具）" + orderTool,
+                        List.of(), toolCalls, false, null, null, null, null);
+            }
+
+            String route = defectCompensationTools.xcbcRoute(userId, subOrderId);
+            toolCalls.add(toolCall("xcbc_route", Map.of("userId", userId, "subOrderId", subOrderId), route));
+            String value = defectCompensationTools.userValueRouter(userId);
+            toolCalls.add(toolCall("user_value_router", Map.of("userId", userId), value));
+            JsonNode valueNode = objectMapper.readTree(value);
+            if (!valueNode.path("highValue").asBoolean(false)) {
+                String low = defectCompensationTools.lowUserValueCallback(userId);
+                toolCalls.add(toolCall("low_user_value_callback", Map.of("userId", userId), low));
+                return new SubAgentResult("defect_comp",
+                        "已完成单据校验。\n\n（工具）" + low,
+                        List.of(), toolCalls, false, null, null, null, null);
+            }
+            String apply = defectCompensationTools.xcbcSubOrderRoute(userId, subOrderId,
+                    text.isBlank() ? "商品瑕疵" : text);
+            toolCalls.add(toolCall("xcbc_sub_order_route",
+                    Map.of("userId", userId, "subOrderId", subOrderId), apply));
+            return new SubAgentResult("defect_comp",
+                    "已按瑕疵补偿流程处理完毕。\n\n（工具）" + apply,
+                    List.of(), toolCalls, false, null, null, null, null);
+        } catch (Exception ex) {
+            log.warn("defect_comp heuristic failed: {}", ex.getMessage());
+            return SubAgentResult.simple("defect_comp",
+                    "瑕疵补偿流程异常，已交还主助手。原因：" + ex.getMessage());
+        }
+    }
+
+    private ToolCallRecord toolCall(String name, Map<String, Object> args, String resultJson) {
+        return new ToolCallRecord(name, args, resultJson, "local", 0L, true);
     }
 
     public Map<String, String> renderPromptsPreview(AgentDefinition def, SubAgentRequest request) {

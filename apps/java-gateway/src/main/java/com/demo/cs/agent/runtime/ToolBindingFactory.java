@@ -1,6 +1,7 @@
 package com.demo.cs.agent.runtime;
 
 import com.demo.cs.infrastructure.catalog.LocalToolCatalog;
+import com.demo.cs.infrastructure.tools.DefectCompensationTools;
 import com.demo.cs.infrastructure.tools.OrderTicketTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,15 @@ public class ToolBindingFactory {
     private static final Logger log = LoggerFactory.getLogger(ToolBindingFactory.class);
 
     private final LocalToolCatalog catalog;
-    private final OrderTicketTools orderTicketTools;
+    private final List<Object> toolBeans;
 
-    public ToolBindingFactory(LocalToolCatalog catalog, OrderTicketTools orderTicketTools) {
+    public ToolBindingFactory(
+            LocalToolCatalog catalog,
+            OrderTicketTools orderTicketTools,
+            DefectCompensationTools defectCompensationTools
+    ) {
         this.catalog = catalog;
-        this.orderTicketTools = orderTicketTools;
+        this.toolBeans = List.of(orderTicketTools, defectCompensationTools);
     }
 
     public ToolCallback[] resolve(List<String> codes) {
@@ -48,8 +53,8 @@ public class ToolBindingFactory {
     }
 
     private ToolCallback buildCallback(LocalToolCatalog.ToolEntry entry) throws Exception {
-        Method method = findMethod(entry.methodName());
-        ToolDefinition fromMethod = ToolDefinitions.from(method);
+        BoundMethod bound = findBoundMethod(entry.methodName());
+        ToolDefinition fromMethod = ToolDefinitions.from(bound.method());
         ToolDefinition definition = ToolDefinition.builder()
                 .name(entry.code())
                 .description(entry.description() != null ? entry.description() : fromMethod.description())
@@ -57,17 +62,21 @@ public class ToolBindingFactory {
                 .build();
         return MethodToolCallback.builder()
                 .toolDefinition(definition)
-                .toolMethod(method)
-                .toolObject(orderTicketTools)
+                .toolMethod(bound.method())
+                .toolObject(bound.bean())
                 .build();
     }
 
-    private Method findMethod(String methodName) throws NoSuchMethodException {
-        for (Method m : OrderTicketTools.class.getMethods()) {
-            if (m.getName().equals(methodName) && m.getDeclaringClass() == OrderTicketTools.class) {
-                return m;
+    private BoundMethod findBoundMethod(String methodName) throws NoSuchMethodException {
+        for (Object bean : toolBeans) {
+            for (Method m : bean.getClass().getMethods()) {
+                if (m.getName().equals(methodName) && m.getDeclaringClass() == bean.getClass()) {
+                    return new BoundMethod(bean, m);
+                }
             }
         }
         throw new NoSuchMethodException(methodName);
     }
+
+    private record BoundMethod(Object bean, Method method) {}
 }
