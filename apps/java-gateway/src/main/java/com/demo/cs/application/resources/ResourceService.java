@@ -5,6 +5,8 @@ import com.demo.cs.infrastructure.persistence.*;
 import com.demo.cs.infrastructure.resources.transport.McpToolTransport;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -17,6 +19,7 @@ import java.util.*;
 /** One JVM lifecycle coordinator; snapshots are immutable and read from committed versions. */
 @Service
 public class ResourceService {
+ private static final Logger log=LoggerFactory.getLogger(ResourceService.class);
  private final ManagedResourceRepository repo;
  private final ManagedResourceVersionRepository versions;
  private final ResourceSettingRepository settings;
@@ -165,6 +168,48 @@ public class ResourceService {
  }
  r.updatedAt=Instant.now();repo.saveAndFlush(r);audit(r,action.toUpperCase());});return detail(id);
  }
+ /**
+  * 按代码目录对账一个已登记的内置工具。
+  *
+  * seed() 只在资源缺失时写入，所以目录改了之后老库永远停在旧元数据上——
+  * 而管理接口又刻意禁止改内置工具的读写风险（防止有人把写工具偷偷降级绕过确认），
+  * 于是没有任何途径能修正它。这里补上唯一合法的途径：以代码为准，在启动时对账。
+  *
+  * 只对账「代码拥有」的字段：sideEffect / inputSchema / choice / 名称 / 描述。
+  * requireConfirm 和 timeoutSeconds 属于运维可调项，原样保留；
+  * 只有当 sideEffect 真的变了，才把 requireConfirm 重算回新默认值
+  * （否则工具已经不是写操作了，却还永远卡着一张确认卡片）。
+  */
+ public synchronized void reconcileBuiltinTool(String code,String name,String description,JsonNode desired) {
+ tx.executeWithoutResult(s->{
+  var found=repo.findByCode(code);if(found.isEmpty())return;
+  ManagedResource r=found.get();if(r.deleted)return;
+  ObjectNode draft=(ObjectNode)parse(r.draftJson);JsonNode current=draft.path("config");
+  if(!current.path("source").asText().equals("BUILTIN"))return;
+  if(!current.path("builtinCode").asText().equals(desired.path("builtinCode").asText()))return;
+
+  List<String> changed=new ArrayList<>();
+  ObjectNode next=current.deepCopy();
+  for(String key:List.of("sideEffect","inputSchema","choice")) {
+   JsonNode want=desired.get(key);JsonNode have=current.get(key);
+   if(Objects.equals(want,have))continue;
+   changed.add(key);
+   if(want==null)next.remove(key);else next.set(key,want.deepCopy());
+  }
+  if(changed.contains("sideEffect"))
+   next.put("requireConfirm",desired.path("requireConfirm").asBoolean(false));
+  boolean nameChanged=!Objects.equals(r.name,name)||!Objects.equals(Objects.requireNonNullElse(r.description,""),Objects.requireNonNullElse(description,""));
+  if(changed.isEmpty()&&!nameChanged)return;
+
+  r.name=name;r.description=description;
+  draft.put("name",name).put("description",description);draft.set("config",next);
+  r.draftJson=draft.toString();r.draftRevision++;
+  publishInternal(r);repo.save(r);
+  audit(r,"RECONCILE_BUILTIN");
+  log.info("内置工具 {} 已按代码目录对账：{}{}",code,changed,nameChanged?" +名称/描述":"");
+ });
+ }
+
  private void publishInternal(ManagedResource r) {ManagedResourceVersion v=new ManagedResourceVersion();v.id=UUID.randomUUID().toString();v.resourceId=r.id;v.versionNumber=Objects.requireNonNullElse(r.publishedVersion,0)+1;v.definitionJson=r.draftJson;v.credentialRef=r.credentialRef;versions.save(v);r.publishedVersion=v.versionNumber;}
  private void publishMcpTools(ManagedResource service) {
  Set<String> seen=new HashSet<>();

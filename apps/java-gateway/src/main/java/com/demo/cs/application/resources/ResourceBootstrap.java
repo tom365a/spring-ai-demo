@@ -18,7 +18,9 @@ public class ResourceBootstrap implements ApplicationRunner {
  c.set("inputSchema",json.readTree(bindings.resolve(java.util.List.of(t.code()))[0].getToolDefinition().inputSchema()));
  // 二选一工具：把按钮文案和「拒绝」分支要执行的工具带进配置，运行时据此渲染确认卡片。
  if(t.choice()!=null){ObjectNode ch=c.putObject("choice");ch.put("prompt",t.choice().prompt()).put("confirmLabel",t.choice().confirmLabel()).put("cancelLabel",t.choice().cancelLabel()).put("rejectTool",t.choice().rejectTool());}
- resources.seed(t.code(),"TOOL",t.name(),t.description(),c,null,true,false);}
+ resources.seed(t.code(),"TOOL",t.name(),t.description(),c,null,true,false);
+ // 已存在的行 seed 不会碰，靠对账把代码目录的变更同步下去。
+ resources.reconcileBuiltinTool(t.code(),t.name(),t.description(),c);}
  for(var s:skills.list()){ObjectNode c=json.createObjectNode().put("instructions",s.instructions()).put("enableRag",s.enableRag()).put("usageNotes","");
  c.set("applicableTypes",json.valueToTree(s.applicableTypes()));c.set("tools",json.valueToTree(s.tools()));resources.seed(s.code(),"SKILL",s.name(),s.description(),c,null,true,false);}
  boolean kimi=env.getProperty("app.llm.provider","openai").equalsIgnoreCase("kimi");

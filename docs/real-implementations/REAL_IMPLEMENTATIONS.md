@@ -289,12 +289,40 @@ agent:seat_y2yz
 - `plainWriteCancelStillDoesNothing`——普通写工具没有 `choice`，payload 不带按钮文案，取消仍然只回
   「已取消该操作。」且不发起任何请求
 
-**一处没能在现有演示库上生效，说清楚：** `confirm_as_order_callback` 本质是只读的（把待确认售后单读出来告知用户），
-代码里已改成 `READ`，这样新建库只会弹一张卡片。但现有 8080 的库里它是 `WRITE`，而平台有一道
-**刻意的校验**——内置工具的读写风险不允许通过接口降级（`ResourceService`：「内置工具读写风险不可降低或篡改」）。
-这道校验是对的，我没有绕过它。所以在这个已存在的库上，该工具仍会多弹一张卡片；新装环境没有这个问题。
-要在现有库上修正，需要把它从 `defect_comp` 的工具列表里摘掉、删除该资源行、重启让 bootstrap 按新目录重新登记——
-这是对运行中数据库的多步操作，等你确认再做。
+### 内置工具元数据以代码目录为准：启动对账
+
+上面那次改动暴露了一个结构性缺口。`confirm_as_order_callback` 本质是只读的，代码里改成了 `READ`，
+但 `seed()` 只在资源缺失时写入，老库里那一行永远停在 `WRITE`；而管理接口又有一道**刻意的校验**——
+内置工具的读写风险不允许通过接口降级（`ResourceService`：「内置工具读写风险不可降低或篡改」），
+它防的正是「把写工具偷偷改成读工具来绕过确认」。两者叠加的结果是：**没有任何合法途径能修正老库**。
+
+绕过那道校验是错的，正确的做法是补上唯一该存在的途径——以代码为准，在启动时对账：
+
+| 项 | 说明 |
+| --- | --- |
+| 入口 | `ResourceService.reconcileBuiltinTool()`，由 `ResourceBootstrap` 在 seed 之后逐个调用 |
+| 代码拥有的字段 | `sideEffect`、`inputSchema`、`choice`、名称、描述——按目录覆盖 |
+| 运维拥有的字段 | `requireConfirm`、`timeoutSeconds`——原样保留，不被冲掉 |
+| 例外 | 只有当 `sideEffect` 真的变了，才把 `requireConfirm` 重算回新默认值；否则工具已经不是写操作，却还永远卡着一张确认卡片 |
+| 安全边界 | 只认 `source=BUILTIN` 且 `builtinCode` 对得上的行；执行身份不符一律不碰 |
+| 可追溯 | 每次改动落一条 `RECONCILE_BUILTIN` 审计并打日志 |
+
+线上实测（真实演示库，不是测试库）：
+
+```
+内置工具 confirm_as_order_callback 已按代码目录对账：[sideEffect] +名称/描述
+内置工具 aggre_as_order_callback   已按代码目录对账：[] +名称/描述
+
+confirm_as_order_callback  v2 | sideEffect=READ  | requireConfirm=false | choice=无
+aggre_as_order_callback    v3 | sideEffect=WRITE | requireConfirm=true  | choice=同意/拒绝
+cancel_order               v1 | sideEffect=WRITE | requireConfirm=true  | choice=无
+```
+
+`cancel_order` 这类目录没变的工具停在 v1 没被动过。**再重启一次没有任何对账日志、17 个工具版本号全部不变**——
+对账是幂等的，不会每次启动都刷版本。
+
+回归用例 `BuiltinToolReconcileTest`（3 条）：风险降级能落到老行上并清掉过期的强制确认；
+运维调过的 `timeoutSeconds`/`requireConfirm` 在目录未变时原样保留且不产生新版本；`builtinCode` 对不上时绝不覆盖。
 
 ### 5 分钟闲置豁免的实测（带对照组）
 
