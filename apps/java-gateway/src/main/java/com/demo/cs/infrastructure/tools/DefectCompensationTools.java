@@ -19,6 +19,10 @@ import java.util.Map;
 @Component
 public class DefectCompensationTools {
 
+    /** 演示用：这笔子订单挂着一笔待确认售后单，用来演示「同意 / 拒绝」确认卡片。 */
+    private static final String DEMO_PENDING_SUB_ORDER = "SUB-ORD20260730002-01";
+    private static final String DEMO_PENDING_AFTER_SALE = "AS20260912001";
+
     private static final ThreadLocal<String> SESSION_CONTEXT = new ThreadLocal<>();
 
     private final CsToolInvocationRepository auditRepo;
@@ -89,7 +93,7 @@ public class DefectCompensationTools {
                         "orderId", orderId,
                         "subOrderId", sub,
                         "needConfirm", true,
-                        "message", "已定位单据 " + sub + "，请确认是否使用该子订单申请瑕疵补偿。"
+                        "message", "已定位单据 " + sub + "。"
                 ));
             }
             if (imageRef != null && !imageRef.isBlank()) {
@@ -99,7 +103,7 @@ public class DefectCompensationTools {
                         "orderId", "ORD20260730002",
                         "subOrderId", "SUB-ORD20260730002-01",
                         "needConfirm", true,
-                        "message", "根据瑕疵图片匹配到子订单 SUB-ORD20260730002-01（手机壳），请确认是否正确。"
+                        "message", "根据瑕疵图片匹配到子订单 SUB-ORD20260730002-01（手机壳）。"
                 ));
             }
             return json(Map.of(
@@ -132,16 +136,33 @@ public class DefectCompensationTools {
         return execute("xcbc_route", Map.of(
                 "userId", nullToEmpty(userId),
                 "subOrderId", nullToEmpty(subOrderId)
-        ), () -> json(Map.of(
-                "ok", true,
-                "subOrderId", nullToEmpty(subOrderId),
-                "hasAfterSalePendingConfirm", false,
-                "withinAfterSaleWindow", true,
-                "alreadyApplied", false,
-                "hasDefectImage", true,
-                "suggestedNext", "user_value_router",
-                "message", "已查询到子订单补偿路由信息，建议先判断用户价值。"
-        )));
+        ), () -> {
+            // 演示子订单挂一笔待确认售后单，让「同意 / 拒绝」这条分支真的走得到；
+            // 其余子订单仍走原来的用户价值判断路径。
+            if (DEMO_PENDING_SUB_ORDER.equals(nullToEmpty(subOrderId))) {
+                return json(Map.of(
+                        "ok", true,
+                        "subOrderId", nullToEmpty(subOrderId),
+                        "hasAfterSalePendingConfirm", true,
+                        "afterSaleId", DEMO_PENDING_AFTER_SALE,
+                        "withinAfterSaleWindow", true,
+                        "alreadyApplied", false,
+                        "hasDefectImage", true,
+                        "suggestedNext", "confirm_as_order_callback",
+                        "message", "该子订单有一笔待确认的售后单 " + DEMO_PENDING_AFTER_SALE + "。"
+                ));
+            }
+            return json(Map.of(
+                    "ok", true,
+                    "subOrderId", nullToEmpty(subOrderId),
+                    "hasAfterSalePendingConfirm", false,
+                    "withinAfterSaleWindow", true,
+                    "alreadyApplied", false,
+                    "hasDefectImage", true,
+                    "suggestedNext", "user_value_router",
+                    "message", "已查询到子订单补偿路由信息，建议先判断用户价值。"
+            ));
+        });
     }
 
     @Tool(description = "引导用户确认或拒绝待确认的售后单")
