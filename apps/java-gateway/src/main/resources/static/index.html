@@ -4,151 +4,284 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>智能客服 Demo</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/fonts/noto-sans-sc.css" />
+  <link rel="stylesheet" href="/theme.css" />
   <style>
-    :root {
-      --bg: #f4f7f8;
-      --panel: #ffffff;
-      --text: #14212b;
-      --muted: #5b6b75;
-      --line: #d7e0e5;
-      --accent: #0f766e;
-      --accent-soft: #ccfbf1;
-      --user: #0f766e;
-      --bot: #eef3f6;
-    }
+    /* 客服对话页。设计令牌见 /theme.css，与 Admin 工作台同一套。 */
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
       min-height: 100%;
       background: var(--bg);
-      color: var(--text);
-      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text-1);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
     }
-    .shell { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; display: grid; gap: 14px; }
-    .brand { margin: 0; font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 700; }
-    .brand span { color: var(--accent); }
-    .sub { margin: 6px 0 0; color: var(--muted); }
-    .meta { display: flex; gap: 8px; flex-wrap: wrap; }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { color: var(--brand-hover); }
+
+    .shell { max-width: 1240px; margin: 0 auto; padding: 24px 20px 40px; display: grid; gap: 16px; }
+
+    .brand { margin: 0; font-size: 22px; font-weight: 600; color: var(--text-1); letter-spacing: .2px; }
+    .brand span { color: var(--brand); }
+    .sub { margin: 6px 0 0; color: var(--text-3); font-size: 13px; }
+
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
     .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 30px; padding: 0 10px;
       border: 1px solid var(--line);
-      background: var(--panel);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: var(--muted);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      font-size: 13px;
+      color: var(--text-2);
       text-decoration: none;
     }
-    .chip strong { color: var(--accent); }
-    .layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; }
+    .chip strong { color: var(--text-1); font-weight: 500; }
+    a.chip { color: var(--brand); border-color: var(--brand-border); background: var(--brand-tint); }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; }
     @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
     .panel {
-      background: var(--panel);
+      background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 14px;
-      min-height: 540px;
+      border-radius: var(--radius);
+      min-height: 560px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(20, 33, 43, 0.04);
     }
     .panel h2 {
       margin: 0;
       padding: 14px 16px;
-      font-size: 0.95rem;
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
+      font-size: 14px;
       font-weight: 600;
+      color: var(--text-1);
+      border-bottom: 1px solid var(--line);
     }
+
+    .agentbar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line-soft);
+      background: var(--surface-2);
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .agentbar label { display: inline-flex; align-items: center; gap: 8px; }
+    .agentbar select { width: auto; min-width: 190px; }
+
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 18px 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      background: #fbfcfd;
+      background: var(--surface-2);
     }
     .msg {
-      max-width: 92%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      line-height: 1.55;
+      max-width: 84%;
+      padding: 10px 13px;
+      line-height: 1.7;
       white-space: pre-wrap;
       word-break: break-word;
-      font-size: 0.95rem;
+      font-size: 14px;
     }
-    .msg.user { align-self: flex-end; background: var(--user); color: #fff; }
-    .msg.assistant { align-self: flex-start; background: var(--bot); border: 1px solid var(--line); }
-    .msg .tag { display: block; font-size: 11px; color: #b45309; margin-bottom: 4px; }
-    .composer { border-top: 1px solid var(--line); padding: 12px; display: grid; gap: 10px; }
-    textarea {
-      width: 100%;
-      min-height: 72px;
-      resize: vertical;
-      border-radius: 10px;
+    .msg.user {
+      align-self: flex-end;
+      background: var(--brand);
+      color: var(--text-inverse);
+      border-radius: var(--radius-lg) 2px var(--radius-lg) var(--radius-lg);
+    }
+    .msg.assistant {
+      align-self: flex-start;
+      background: var(--surface);
+      color: var(--text-1);
       border: 1px solid var(--line);
-      background: #fff;
-      color: var(--text);
-      padding: 10px 12px;
-      font: inherit;
+      border-radius: 2px var(--radius-lg) var(--radius-lg) var(--radius-lg);
     }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-    button, .file-btn {
-      border: 0;
-      border-radius: 999px;
-      padding: 9px 16px;
-      font: inherit;
-      cursor: pointer;
-      background: var(--accent);
-      color: #fff;
+    .msg .tag {
+      display: block;
+      font-size: 12px;
+      color: var(--warning);
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    /* 写操作二次确认卡片 —— 由脚本插入，结构为 strong + pre + 两个按钮 */
+    #confirmationCard {
+      align-self: stretch;
+      max-width: 100%;
+      padding: 0;
+      overflow: hidden;
+      border-color: var(--warning-border);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+    #confirmationCard strong {
+      display: block;
+      padding: 10px 14px;
+      background: var(--warning-bg);
+      border-bottom: 1px solid var(--warning-border);
+      color: var(--text-1);
+      font-size: 14px;
       font-weight: 600;
     }
-    button.secondary {
-      background: #fff;
-      color: var(--text);
+    #confirmationCard pre {
+      margin: 12px 14px;
+      padding: 10px 12px;
+      background: var(--surface-3);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-2);
+      max-height: 200px;
+      overflow: auto;
+    }
+    .confirm-body { padding: 12px 14px 4px; display: grid; gap: 9px; }
+    .confirm-row { display: flex; gap: 10px; font-size: 13px; align-items: baseline; }
+    .confirm-row > span { color: var(--text-3); width: 58px; flex: none; }
+    .confirm-row b { font-weight: 500; color: var(--text-1); }
+    .confirm-row code { font-family: var(--font-mono); font-size: 12px; color: var(--text-1); }
+    .confirm-row em { font-style: normal; color: var(--text-3); font-size: 12px; }
+    .confirm-note {
+      margin: 2px 14px 0;
+      padding: 8px 10px;
+      background: var(--danger-bg);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--danger);
+    }
+    #confirmationCard details { margin: 10px 14px 0; }
+    #confirmationCard summary { cursor: pointer; font-size: 12px; color: var(--text-3); padding: 4px 0; }
+    #confirmationCard button { margin: 0 0 14px 14px; }
+    #confirmationCard button:nth-of-type(1) { background: var(--danger-solid); }
+    #confirmationCard button:nth-of-type(1):hover { background: #b8271e; }
+    #confirmationCard button:nth-of-type(2) {
+      background: var(--surface);
+      color: var(--text-2);
       border: 1px solid var(--line);
     }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .file-btn {
+    #confirmationCard button:nth-of-type(2):hover { background: var(--surface-3); color: var(--text-1); }
+
+    .composer { border-top: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 10px; background: var(--surface); }
+    textarea {
+      width: 100%;
+      min-height: 76px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-1);
+      padding: 9px 12px;
+      font: inherit;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    textarea::placeholder { color: var(--text-placeholder); }
+    textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 2px rgba(11, 98, 214, .12);
+    }
+    select {
+      height: var(--control-h);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text-1);
+      padding: 0 8px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    button, .file-btn {
       display: inline-flex;
-      background: #fff;
-      color: var(--text);
-      border: 1px solid var(--line);
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: var(--control-h);
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--brand);
+      color: var(--text-inverse);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
     }
+    button:hover, .file-btn:hover { background: var(--brand-hover); }
+    button.secondary {
+      background: var(--surface);
+      color: var(--text-2);
+      border-color: var(--line);
+    }
+    button.secondary:hover { background: var(--surface-3); color: var(--text-1); border-color: var(--line-strong); }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .file-btn {
+      background: var(--surface);
+      color: var(--text-2);
+      border-color: var(--line);
+    }
+    .file-btn:hover { background: var(--surface-3); color: var(--text-1); }
     #file { display: none; }
-    .side { padding: 12px 16px 16px; overflow: auto; display: grid; gap: 12px; }
+
+    .side { padding: 14px 16px 16px; overflow: auto; display: grid; gap: 14px; align-content: start; }
     .side pre {
       margin: 0;
-      background: #f6f8fa;
+      background: var(--surface-3);
       border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-family: var(--font-mono);
       font-size: 12px;
+      line-height: 1.6;
       overflow: auto;
       max-height: 180px;
-      color: #334155;
+      color: var(--text-2);
     }
-    .hint { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .hint { color: var(--text-3); font-size: 12px; line-height: 1.6; }
+    .side .hint { margin-bottom: 6px; font-weight: 500; color: var(--text-2); }
+
     .examples { display: flex; flex-wrap: wrap; gap: 6px; }
     .examples button {
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid #99f6e4;
-      font-weight: 500;
-      font-size: 12px;
-      padding: 6px 10px;
-    }
-    .banner {
-      background: #ecfdf5;
-      border: 1px solid #99f6e4;
-      color: #115e59;
-      border-radius: 10px;
-      padding: 10px 12px;
+      height: auto;
+      padding: 5px 11px;
+      background: var(--brand-tint);
+      color: var(--brand);
+      border: 1px solid var(--brand-border);
+      border-radius: var(--radius-sm);
       font-size: 13px;
+      font-weight: 400;
     }
+    .examples button:hover { background: #e3efff; }
+
+    .banner {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--line-strong);
+      color: var(--text-3);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    .banner code { font-family: var(--font-mono); color: var(--text-2); }
   </style>
 </head>
-<body style="background:#f4f7f8;color:#14212b">
+<body>
 <div class="shell">
   <div class="banner">若能看到这条提示，前端已正常加载。请使用 <code>http://localhost:8080/</code> 访问（不要用本地文件打开）。</div>
   <header style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:end">
@@ -160,13 +293,17 @@
       <div class="chip">模式 <strong>multi-agent</strong></div>
       <div class="chip">会话 <strong id="sid">-</strong></div>
       <div class="chip">MCP <strong id="mcp">-</strong></div>
+      <div class="chip">模型 <strong id="modelProvider">加载中</strong></div>
+      <div class="chip">知识检索 <strong id="retrievalMode">加载中</strong></div>
       <a class="chip" href="/admin.html">Agent 管理</a>
     </div>
   </header>
   <div class="layout">
     <section class="panel">
       <h2>对话</h2>
+      <div class="agentbar"><label>主 Agent <select id="supervisorSelect"></select></label><button type="button" id="reloadAgents" class="secondary">刷新列表</button><span id="agentMode" class="hint"></span></div>
       <div id="messages"></div>
+      <div id="supportStatus" class="hint" hidden></div>
       <div class="composer">
         <div class="examples">
           <button type="button" data-q="国内订单退货时效是多久？">退货政策</button>
@@ -186,7 +323,7 @@
       </div>
     </section>
     <aside class="panel">
-      <h2>调试面板</h2>
+      <h2>运行详情</h2>
       <div class="side">
         <div><div class="hint">最近事件</div><pre id="debug">等待对话…</pre></div>
         <div><div class="hint">知识库</div><pre id="docs">-</pre></div>
@@ -199,6 +336,9 @@
 <script>
 const API="";
 let sessionId=null, userId="u_001", attachmentIds=[], pendingConfirm=null;
+let supportAssigned=false;
+let lastInputAt=Date.now(), lastActivitySent=0, sessionCreation=null, sessionEnded=false;
+const IDLE_MS=5*60*1000;
 const messagesEl=document.getElementById("messages");
 const debugEl=document.getElementById("debug");
 const inputEl=document.getElementById("input");
@@ -213,22 +353,184 @@ function addMsg(role,text,tag){
   return div;
 }
 
+/* 关掉页面再打开，如果人还在坐席队列里排着，必须回到原会话。
+   否则会新建一条，客户就排在自己那条影子会话后面（实测「第 2 位」，前面那位就是他自己）。 */
+function rememberSession(){try{localStorage.setItem('csSessionId',sessionId||'')}catch{/* 隐私模式忽略 */}}
+function forgetSession(){try{localStorage.removeItem('csSessionId')}catch{/* 隐私模式忽略 */}}
+
+async function resumeHandoffSession(){
+  let saved=null;try{saved=localStorage.getItem('csSessionId')}catch{saved=null}
+  if(!saved)return false;
+  try{
+    const stateRes=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(saved)+'/handoff?userId='+encodeURIComponent(userId));
+    if(!stateRes.ok)return false;
+    const stateBody=await stateRes.json();if(stateBody.code&&stateBody.code!==0)return false;
+    const state=stateBody.data||stateBody;
+    if(!state.assigned)return false;                 // 没在人工流程里就按老规矩开新会话
+    const res=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(saved));
+    if(!res.ok)return false;
+    const body=await res.json();if(body.code&&body.code!==0)return false;
+    const data=body.data||body;
+    if(data.status!=='active'||data.userId!==userId)return false;
+    sessionId=data.id;sessionEnded=false;lastInputAt=Date.now();lastActivitySent=0;
+    attachmentIds=[];pendingConfirm=null;supportAssigned=false;
+    messagesEl.innerHTML='';
+    for(const m of data.messages||[]){
+      if(m.role!=='user'&&m.role!=='assistant')continue;
+      addMsg(m.role==='user'?'user':'assistant',m.content,m.role==='assistant'&&m.agentName?m.agentName:undefined);
+    }
+    document.getElementById('fileName').textContent='未选择文件';
+    enterHumanMode(state);
+    return true;
+  }catch{return false}
+}
+
 async function createSession(){
+  if(sessionCreation)return sessionCreation;
+  sessionCreation=createSessionNow();
+  try{return await sessionCreation;}finally{sessionCreation=null;}
+}
+async function createSessionNow(){
+  if(sessionId&&!sessionEnded) {
+    const closed=await fetch(API+"/api/v1/sessions/"+encodeURIComponent(sessionId),{method:"DELETE"});
+    if(!closed.ok)throw Error('结束原会话失败，请重试');
+  }
   const res=await fetch(API+"/api/v1/sessions",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,channel:"web"})});
   const body=await res.json();
+  if(!res.ok||body.code&&body.code!==0)throw Error(body.message||'创建会话失败');
   const data=body.data||body;
-  sessionId=data.id;
+  sessionId=data.id;rememberSession();
+  sessionEnded=false;lastInputAt=Date.now();lastActivitySent=0;
   document.getElementById("sid").textContent=sessionId;
   messagesEl.innerHTML="";
   addMsg("assistant","您好，我是智能客服助手。可咨询退换货政策、查订单物流，或上传破损图片开工单。");
   attachmentIds=[]; pendingConfirm=null;
+  supportAssigned=false;clearSupportStatus();
   document.getElementById("fileName").textContent="未选择文件";
 }
 
+function markSessionEnded(){
+  if(sessionEnded)return;
+  sessionEnded=true;pendingConfirm=null;attachmentIds=[];forgetSession();
+  document.getElementById('sid').textContent=sessionId+'（5 分钟未输入，已结束）';
+  messagesEl.querySelectorAll('button').forEach(button=>button.disabled=true);
+  document.getElementById('fileName').textContent='未选择文件';
+  addMsg('assistant','连续5分钟未输入，本次会话已结束。再次输入会开始新会话。');
+}
+
+function showHumanHandoff(){
+  if(sessionEnded||supportAssigned||document.getElementById('humanHandoff'))return;
+  const card=addMsg('assistant','当前智能客服暂时无法完成处理，您可以转人工继续咨询。');card.id='humanHandoff';
+  const button=document.createElement('button');button.textContent='转人工';card.appendChild(button);
+  button.onclick=async()=>{
+    const originalSession=sessionId;button.disabled=true;
+    try{
+      await reportInput(true);if(sessionId!==originalSession)throw Error('原会话已结束，请在新会话继续咨询');
+      const response=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(sessionId)+'/handoff',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId})});
+      const envelope=await response.json();if(!response.ok||envelope.code&&envelope.code!==0)throw Error(envelope.message||'转接失败');
+      const data=envelope.data||envelope;
+      addMsg('assistant',data.message);
+      enterHumanMode(data);
+    }catch(error){addMsg('assistant',error.message);button.disabled=sessionEnded;}
+  };
+}
+/* 转人工不止「转人工」按钮一条路：对话里说「转人工」会走 escalate_human 工具，
+   前端不主动核对就不知道自己已经在排队，坐席回复也就永远拉不回来。 */
+const supportStatusEl=document.getElementById('supportStatus');
+function showSupportStatus(text){supportStatusEl.textContent=text;supportStatusEl.hidden=!text;}
+function clearSupportStatus(){supportStatusEl.textContent='';supportStatusEl.hidden=true;}
+
+function enterHumanMode(data){
+  if(supportAssigned)return;
+  supportAssigned=true;pendingConfirm=null;
+  messagesEl.querySelectorAll('button').forEach(b=>b.disabled=true);
+  const simulated=data&&data.mode==='SIMULATED';
+  document.getElementById('sid').textContent=sessionId+' · '+(simulated?'模拟人工':(data&&data.operatorName?('坐席 '+data.operatorName):'人工坐席'));
+  if(!simulated)startSupportPolling();
+}
+
+async function syncSupportState(){
+  if(!sessionId||supportAssigned||sessionEnded)return;
+  const target=sessionId;
+  try{
+    const res=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(target)+'/handoff?userId='+encodeURIComponent(userId));
+    const envelope=await res.json();if(!res.ok||envelope.code&&envelope.code!==0)return;
+    const data=envelope.data||envelope;
+    if(data.assigned&&sessionId===target)enterHumanMode(data);
+  }catch{/* 同步失败不影响本轮对话，下一轮再试 */}
+}
+
+/* 真人坐席模式下，坐席的回复不会随着请求返回，需要轮询拉取。 */
+let supportPollTimer=null;const seenMessageIds=new Set();
+function stopSupportPolling(){if(supportPollTimer){clearInterval(supportPollTimer);supportPollTimer=null;}}
+async function pollSupportOnce(silent=false){
+  if(!sessionId||!supportAssigned)return;
+  const target=sessionId;
+  try{
+    const res=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(target)+'/handoff/messages?userId='+encodeURIComponent(userId));
+    const envelope=await res.json();if(!res.ok||envelope.code&&envelope.code!==0)return;
+    const data=envelope.data||envelope;if(sessionId!==target)return;
+    for(const m of data.messages||[]){
+      if(seenMessageIds.has(m.id))continue;
+      seenMessageIds.add(m.id);
+      if(!silent&&m.role==='assistant'){addMsg('assistant',m.content,m.agentName||undefined);clearSupportStatus();}
+    }
+    const label=document.getElementById('sid');
+    if(data.operatorName)label.textContent=sessionId+' · 坐席 '+data.operatorName;
+    if(data.assigned===false){supportAssigned=false;stopSupportPolling();clearSupportStatus();}
+  }catch{/* 网络抖动下保持上次画面，下一轮重试 */}
+}
+function startSupportPolling(){
+  stopSupportPolling();
+  /* 转人工那一刻的消息客户已经在屏幕上看过了，先静默登记 id，只渲染此后坐席发来的新消息，避免同一句显示两遍。 */
+  pollSupportOnce(true);
+  supportPollTimer=setInterval(()=>pollSupportOnce(),3000);
+}
+
+async function reportInput(force=false){
+  if(sessionId&&!supportAssigned&&Date.now()-lastInputAt>=IDLE_MS)markSessionEnded();
+  if(!sessionId||sessionEnded)await createSession();
+  lastInputAt=Date.now();
+  if(!force&&lastInputAt-lastActivitySent<1000)return;
+  lastActivitySent=lastInputAt;
+  const activeId=sessionId;
+  const res=await fetch(API+'/api/v1/sessions/'+encodeURIComponent(activeId)+'/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId})});
+  const envelope=await res.json();
+  if(!res.ok||envelope.code&&envelope.code!==0){throw Error(envelope.message||'会话活跃状态更新失败');}
+  const data=envelope.data||envelope;
+  if(data.status==='closed'&&sessionId===activeId){markSessionEnded();await createSession();}
+}
+let inputReportTimer;
+inputEl.addEventListener('input',()=>{
+  const wasExpired=sessionEnded||(!supportAssigned&&Date.now()-lastInputAt>=IDLE_MS);
+  if(wasExpired){reportInput(true).catch(e=>addMsg('assistant',e.message));return;}
+  lastInputAt=Date.now();clearTimeout(inputReportTimer);
+  if(lastInputAt-lastActivitySent>=1000)reportInput().catch(e=>addMsg('assistant',e.message));
+  inputReportTimer=setTimeout(()=>reportInput(true).catch(e=>addMsg('assistant',e.message)),300);
+});
+// 排队等真人时客户本来就不会打字，闲置计时必须停掉，否则等着等着会话被判结束。
+setInterval(()=>{if(sessionId&&!sessionEnded&&!supportAssigned&&Date.now()-lastInputAt>=IDLE_MS)markSessionEnded();},1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&sessionId&&!sessionEnded&&!supportAssigned&&Date.now()-lastInputAt>=IDLE_MS)markSessionEnded();});
+
+
+async function refreshAgents(){
+  const sel=document.getElementById("supervisorSelect"), old=sel.value;
+  const res=await fetch("/api/v1/agents/runtime"); const json=await res.json(); const data=json.data||json;
+  sel.innerHTML="";
+  for(const a of data.items.filter(a=>a.type==="SUPERVISOR")) { const o=document.createElement("option");o.value=a.code;o.textContent=a.name+" · v"+a.loadedVersion;sel.appendChild(o); }
+  if([...sel.options].some(o=>o.value===old))sel.value=old; else if([...sel.options].some(o=>o.value==="supervisor"))sel.value="supervisor";
+  document.getElementById("agentMode").textContent=data.configEnabled ? (sel.options.length ? "已启用配置" : "暂无已启用主 Agent") : "固定模式，配置入口已关闭";
+  document.getElementById("send").disabled=data.configEnabled&&!sel.options.length;
+}
+document.getElementById("reloadAgents").onclick=()=>refreshAgents().catch(e=>addMsg("assistant",e.message));
+document.getElementById("supervisorSelect").onchange=()=>createSession();
+refreshAgents().catch(e=>addMsg("assistant",e.message));
 async function refreshMeta(){
   try{
     const cfg=(await (await fetch(API+"/api/v1/debug/config")).json()).data || {};
     document.getElementById("mcp").textContent=cfg.mcpEnabled?"on":"off";
+    document.getElementById("modelProvider").textContent=[cfg.llmProvider,cfg.llmModel].filter(Boolean).join(" / ");
+    document.getElementById("retrievalMode").textContent=cfg.retrievalMode||cfg.vectorBackend||"未知";
   }catch{document.getElementById("mcp").textContent="?"}
   try{
     const docs=(await (await fetch(API+"/api/v1/knowledge/docs")).json());
@@ -240,19 +542,47 @@ async function refreshMeta(){
   }catch{document.getElementById("mcpTools").textContent="MCP 不可用"}
 }
 
+function showConfirmation(payload){
+ const previous=document.getElementById('confirmationCard');if(previous)previous.remove();
+ const card=addMsg('assistant','');card.id='confirmationCard';
+ const title=document.createElement('strong');title.textContent='请核对以下操作，确认后才会执行';card.append(title);
+ const body=document.createElement('div');body.className='confirm-body';
+ const row=(label,build)=>{const r=document.createElement('div');r.className='confirm-row';
+   const k=document.createElement('span');k.textContent=label;r.append(k);build(r);body.append(r)};
+ const sourceLabel={BUILTIN:'\u5185\u7f6e',HTTP:'\u81ea\u5b9a\u4e49 HTTP',MCP:'MCP'};
+ const tool=payload.tool||{};
+ if(payload.summary)row('\u64cd\u4f5c',r=>{const b=document.createElement('b');b.textContent=payload.summary;r.append(b)});
+ if(tool.code)row('\u5de5\u5177',r=>{const c=document.createElement('code');c.textContent=tool.code;r.append(c);
+   const e=document.createElement('em');e.textContent=(sourceLabel[tool.source]||tool.source||'')+(tool.version?' \u00b7 v'+tool.version:'');r.append(e)});
+ const names=Object.keys(tool.arguments||{});
+ if(names.length)row('\u53c2\u6570',r=>{const c=document.createElement('code');c.textContent=names.join('\uff0c');r.append(c);
+   const e=document.createElement('em');e.textContent='\u503c\u5df2\u5728\u670d\u52a1\u7aef\u8131\u654f';r.append(e)});
+ if(payload.expiresAt){const at=new Date(payload.expiresAt);
+   if(!isNaN(at))row('\u6709\u6548\u671f',r=>{const e=document.createElement('em');
+     e.textContent=at.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})+' \u524d\u6709\u6548\uff0c\u8fc7\u671f\u9700\u91cd\u65b0\u53d1\u8d77';r.append(e)})}
+ card.append(body);
+ const note=document.createElement('div');note.className='confirm-note';
+ note.textContent='\u786e\u8ba4\u540e\u7acb\u5373\u6267\u884c\uff0c\u4e0d\u53ef\u64a4\u9500\u3002';card.append(note);
+ const raw=document.createElement('details');const sum=document.createElement('summary');
+ sum.textContent='\u539f\u59cb payload';raw.append(sum);
+ const preview=document.createElement('pre');preview.style.whiteSpace='pre-wrap';
+ preview.textContent=JSON.stringify(payload,null,2);raw.append(preview);card.append(raw);
+ for(const [label,confirmed]of [['确认执行',true],['取消操作',false]]){const b=document.createElement('button');b.textContent=label;b.onclick=async()=>{card.querySelectorAll('button').forEach(x=>x.disabled=true);try{const res=await fetch(API+'/api/v1/confirmations/'+encodeURIComponent(payload.id),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:payload.sessionId||sessionId,confirm:confirmed})});const envelope=await res.json();if(!res.ok||envelope.code&&envelope.code!==0)throw Error(envelope.message||'确认失败');const result=envelope.data||envelope;pendingConfirm=null;card.remove();addMsg('assistant',result.answer||JSON.stringify(result.result||result));debugEl.textContent=JSON.stringify(result,null,2);if(result.confirmRequired&&result.confirmationPayload){pendingConfirm=result.confirmationPayload;showConfirmation(pendingConfirm)}/* 「转人工」是写工具，走确认这条路，不走流式 */await syncSupportState();}catch(e){addMsg('assistant',e.message+'。该动作未被自动重试，请查看执行状态。')}};card.append(b)}
+}
 async function send(){
   const text=inputEl.value.trim();
   if(!text && !attachmentIds.length) return;
-  if(!sessionId) await createSession();
+  try{await reportInput(true);}catch(e){addMsg('assistant',e.message);return;}
   addMsg("user", text||"[图片消息]");
   inputEl.value="";
   document.getElementById("send").disabled=true;
-  const body={sessionId,userId,text:text||"请结合图片帮我处理售后",attachmentIds:[...attachmentIds]};
-  if(pendingConfirm){body.confirm=true;body.confirmPayload=pendingConfirm;pendingConfirm=null}
+  const body={sessionId,userId,supervisorCode:document.getElementById("supervisorSelect").value,text:text||"请结合图片帮我处理售后",attachmentIds:[...attachmentIds]};
+  // Confirmation requires an explicit action button; ordinary messages never authorize pending writes.
   const events=[];
   let bubble=null, answer="";
   try{
     const res=await fetch(API+"/api/v1/chat/stream",{method:"POST",headers:{"Content-Type":"application/json","Accept":"text/event-stream"},body:JSON.stringify(body)});
+    if (!res.ok) { const error=await res.json(); throw new Error(error.message || "请求失败"); }
     const reader=res.body.getReader();
     const decoder=new TextDecoder();
     let buffer="";
@@ -274,27 +604,39 @@ async function send(){
         }
         if(ev.event==="confirm_required"){
           pendingConfirm=ev.confirmationPayload;
-          if(ev.answer && !answer) addMsg("assistant", ev.answer, "需确认：再次发送以确认");
+          if(ev.answer && !answer) addMsg("assistant", ev.answer, "等待明确确认");
+          showConfirmation(ev.confirmationPayload);
         }
+        if(ev.event==="final"){
+          const diagnostics=ev.diagnostics||ev.modelDiagnostics;
+          if(diagnostics)document.getElementById("modelProvider").textContent=JSON.stringify(diagnostics.model||diagnostics);
+          if(ev.confirmRequired&&ev.confirmationPayload&&!pendingConfirm){pendingConfirm=ev.confirmationPayload;showConfirmation(pendingConfirm);}
+          if(diagnostics?.handoffAvailable||ev.answer?.startsWith('执行已停止'))showHumanHandoff();
+        }
+        if(ev.event==='error'){addMsg('assistant','智能客服暂时无法完成处理，请转人工继续咨询。');showHumanHandoff();}
         if(ev.event==="final" && ev.answer && !answer){
           answer=ev.answer;
-          addMsg("assistant", answer, ev.agentName?("agent:"+ev.agentName):"");
+          // 人工接管期间后端每轮都会回一条投递回执。真实 IM 不会为「消息已发出」单开一条气泡，
+          // 更不该挂坐席的署名——放进状态行，坐席真回话时再清掉。
+          if(ev.intent==="human_support"||ev.diagnostics&&ev.diagnostics.awaitingOperator)showSupportStatus(answer);
+          else addMsg("assistant", answer, ev.agentName?("agent:"+ev.agentName):"");
         }
       }
     }
     debugEl.textContent=JSON.stringify(events.slice(-15),null,2);
     attachmentIds=[]; document.getElementById("fileName").textContent="未选择文件";
     refreshMeta();
-  }catch(e){addMsg("assistant","请求失败: "+e)}
+    await syncSupportState();
+  }catch(e){addMsg("assistant","智能客服连接异常，暂时无法完成处理。");showHumanHandoff();}
   finally{document.getElementById("send").disabled=false}
 }
 
 document.getElementById("send").onclick=send;
 document.getElementById("newSession").onclick=createSession;
-document.querySelectorAll(".examples button").forEach(btn=>btn.onclick=()=>{inputEl.value=btn.dataset.q});
+document.querySelectorAll(".examples button").forEach(btn=>btn.onclick=()=>{inputEl.value=btn.dataset.q;inputEl.dispatchEvent(new Event('input'));});
 document.getElementById("file").onchange=async e=>{
   const file=e.target.files[0]; if(!file) return;
-  if(!sessionId) await createSession();
+  await reportInput(true);
   const fd=new FormData(); fd.append("file",file); fd.append("sessionId",sessionId);
   const res=await fetch(API+"/api/v1/attachments",{method:"POST",body:fd});
   const body=await res.json(); const data=body.data||body;
@@ -304,7 +646,7 @@ document.getElementById("file").onchange=async e=>{
 inputEl.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
 (async()=>{
   try {
-    await createSession();
+    if(!await resumeHandoffSession())await createSession();
   } catch (e) {
     addMsg("assistant", "会话创建失败: " + e + "。页面静态内容应仍可见。");
   }

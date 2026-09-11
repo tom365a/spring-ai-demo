@@ -1,0 +1,759 @@
+{
+  "capturedAt": "2026-09-10T11:28:55.8278182+08:00",
+  "worker": {
+    "draft": {
+      "code": "agent_02a1b3db9ecf4a6a",
+      "name": "页面验收子 Agent",
+      "description": "UI创建；负责订单查询 <安全文本>",
+      "type": "WORKER",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [
+        "query_order"
+      ],
+      "skills": [
+        "clear_response",
+        "order_lookup"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [],
+      "routing": null,
+      "policies": {
+        "allowWriteTools": true,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 0
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "published": {
+      "code": "agent_02a1b3db9ecf4a6a",
+      "name": "页面验收子 Agent",
+      "description": "UI创建；负责订单查询 <安全文本>",
+      "type": "WORKER",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [
+        "query_order"
+      ],
+      "skills": [
+        "clear_response",
+        "order_lookup"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [],
+      "routing": null,
+      "policies": {
+        "allowWriteTools": true,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 0
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "dirty": false,
+    "draftRevision": 3,
+    "publishedVersion": 2,
+    "status": "PUBLISHED",
+    "enabled": true,
+    "updatedAt": "2026-09-10T03:24:32.520154Z",
+    "updatedBy": "admin"
+  },
+  "main": {
+    "draft": {
+      "code": "ui_accept_main",
+      "name": "页面验收主 Agent",
+      "description": "将用户请求分配给页面新建的订单查询子 Agent",
+      "type": "SUPERVISOR",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [],
+      "skills": [
+        "clear_response"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [
+        {
+          "agentCode": "agent_02a1b3db9ecf4a6a",
+          "alias": null,
+          "whenToUse": "UI创建；负责订单查询 <安全文本>",
+          "priority": 100,
+          "enabled": true
+        }
+      ],
+      "routing": {
+        "confidenceThreshold": 0.55,
+        "allowNone": true,
+        "clarifyPrompt": null
+      },
+      "policies": {
+        "allowWriteTools": false,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 1
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "published": {
+      "code": "ui_accept_main",
+      "name": "页面验收主 Agent",
+      "description": "将用户请求分配给页面新建的订单查询子 Agent",
+      "type": "SUPERVISOR",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [],
+      "skills": [
+        "clear_response"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [
+        {
+          "agentCode": "agent_02a1b3db9ecf4a6a",
+          "alias": null,
+          "whenToUse": "UI创建；负责订单查询 <安全文本>",
+          "priority": 100,
+          "enabled": true
+        }
+      ],
+      "routing": {
+        "confidenceThreshold": 0.55,
+        "allowNone": true,
+        "clarifyPrompt": null
+      },
+      "policies": {
+        "allowWriteTools": false,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 1
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "dirty": false,
+    "draftRevision": 1,
+    "publishedVersion": 1,
+    "status": "PUBLISHED",
+    "enabled": true,
+    "updatedAt": "2026-09-10T03:18:31.81573Z",
+    "updatedBy": "admin"
+  },
+  "runtime": {
+    "configEnabled": true,
+    "items": [
+      {
+        "code": "agent_02a1b3db9ecf4a6a",
+        "loadedVersion": 2,
+        "name": "页面验收子 Agent",
+        "type": "WORKER"
+      },
+      {
+        "code": "chitchat",
+        "loadedVersion": 1,
+        "name": "闲聊",
+        "type": "WORKER"
+      },
+      {
+        "code": "defect_comp",
+        "loadedVersion": 1,
+        "name": "瑕疵补偿",
+        "type": "WORKER"
+      },
+      {
+        "code": "knowledge",
+        "loadedVersion": 1,
+        "name": "知识问答",
+        "type": "WORKER"
+      },
+      {
+        "code": "order",
+        "loadedVersion": 1,
+        "name": "订单履约",
+        "type": "WORKER"
+      },
+      {
+        "code": "root_probe_main",
+        "loadedVersion": 1,
+        "name": "启动联调主 Agent",
+        "type": "SUPERVISOR"
+      },
+      {
+        "code": "root_probe_worker",
+        "loadedVersion": 1,
+        "name": "启动联调子 Agent",
+        "type": "WORKER"
+      },
+      {
+        "code": "supervisor",
+        "loadedVersion": 1,
+        "name": "主路由",
+        "type": "SUPERVISOR"
+      },
+      {
+        "code": "ticket",
+        "loadedVersion": 1,
+        "name": "售后工单",
+        "type": "WORKER"
+      },
+      {
+        "code": "ui_accept_main",
+        "loadedVersion": 1,
+        "name": "页面验收主 Agent",
+        "type": "SUPERVISOR"
+      },
+      {
+        "code": "vision",
+        "loadedVersion": 1,
+        "name": "视觉理解",
+        "type": "WORKER"
+      }
+    ]
+  },
+  "modelRequests": [
+    {
+      "sequence": 11,
+      "at": "2026-09-10T03:19:41.234Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_02a1b3db9ecf4a6a（agent_02a1b3db9ecf4a6a）— UI创建；负责订单查询 <安全文本>\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: [tool:query_order] 查询订单并根据实际工具结果回答\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n[tool:query_order] 查询订单并根据实际工具结果回答\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 12,
+      "at": "2026-09-10T03:19:41.336Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_WORKER_V1：依据工具查询结果作答。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "[tool:query_order] 查询订单并根据实际工具结果回答",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 13,
+      "at": "2026-09-10T03:19:41.356Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_WORKER_V1：依据工具查询结果作答。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "[tool:query_order] 查询订单并根据实际工具结果回答",
+            "role": "user"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_12",
+                "type": "function",
+                "function": {
+                  "name": "query_order",
+                  "arguments": "{\"orderId\":\"ORD10001\",\"userId\":\"u_001\"}"
+                }
+              }
+            ]
+          },
+          {
+            "content": "\"{\\\"message\\\":\\\"订单不存在\\\",\\\"ok\\\":false}\"",
+            "role": "tool",
+            "name": "query_order",
+            "tool_call_id": "call_12"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 1,
+      "at": "2026-09-10T03:22:34.504Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_02a1b3db9ecf4a6a（agent_02a1b3db9ecf4a6a）— UI创建；负责订单查询 <安全文本>\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 请说明本轮回答使用的已发布提示词\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n请说明本轮回答使用的已发布提示词\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-10T03:22:34.519Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_WORKER_V1：依据工具查询结果作答。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "请说明本轮回答使用的已发布提示词",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-10T03:23:03.491Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_02a1b3db9ecf4a6a（agent_02a1b3db9ecf4a6a）— UI创建；负责订单查询 <安全文本>\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】LOCAL_STUB_REPLY summary | 摘要。\n保留：用户诉求、已确认的订单号/运单号、是否待确认取消、未决问题。\n不要发明对话中未出现的事实。\n\n对话：\nuser: 请说明本轮回答使用的已发布提示词\nassistant: LOCAL_STUB_REPLY UI_ACCEPT_WORKER_V1：依据工具查询结果作答。 | 请说明本轮回答使用的已发布提示词\n\n【最近对话】\nuser: 请说明本轮回答使用的已发布提示词\nassistant: LOCAL_STUB_REPLY UI_ACCEPT_WORKER_V1：依据工具查询结果作答。 | 请说明本轮回答使用的已发布提示词\nuser: [tool:query_order] 查询示例订单\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n[tool:query_order] 查询示例订单\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-10T03:23:03.501Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "[tool:query_order] 查询示例订单",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 6,
+      "at": "2026-09-10T03:23:03.51Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "[tool:query_order] 查询示例订单",
+            "role": "user"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_5",
+                "type": "function",
+                "function": {
+                  "name": "query_order",
+                  "arguments": "{\"orderId\":\"ORD20260730001\",\"userId\":\"u_001\"}"
+                }
+              }
+            ]
+          },
+          {
+            "content": "\"{\\\"order\\\":{\\\"cancellable\\\":true,\\\"status\\\":\\\"待发货\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"userId\\\":\\\"u_001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\",\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"amount\\\":299.0},\\\"ok\\\":true}\"",
+            "role": "tool",
+            "name": "query_order",
+            "tool_call_id": "call_5"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "at": "2026-09-11T10:05:00+08:00",
+  "scope": "把文档中标注为「明确是模拟的」三项改为真实实现：订单/工单、人工客服、知识检索。",
+  "environment": "隔离后端 http://localhost:18080，独立 H2 文件库，自有回环夹具 18091（模型/HTTP/MCP），合成凭证。未接触 8080 用户应用，未读取根 .env。",
+
+  "orders": {
+    "before": "OrderTicketTools 的 static MOCK_ORDERS / MOCK_TICKETS，进程重启即丢",
+    "after": {
+      "entities": ["BizOrder", "BizTicket", "BizLogisticsTrace"],
+      "service": "OrderTicketService (@Transactional)",
+      "concurrency": "BizOrderRepository.lockById 悲观锁，锁内复查状态",
+      "stateMachine": "仅「待发货」可取消；其余返回业务拒绝",
+      "ticketNumber": "日期+随机后缀，唯一约束兜底并重试（原实现用时间戳，同毫秒会碰撞）",
+      "seed": "BusinessDataSeed 按主键幂等，不覆盖运行中产生的状态",
+      "responseShapeUnchanged": true
+    },
+    "restartProof": {
+      "cancelledBeforeRestart": "ORD20260730001 -> 已取消",
+      "afterRestart": "仍为已取消",
+      "ticketBeforeRestart": "TK202609110OHDC3",
+      "ticketAfterRestart": "TK202609110OHDC3"
+    }
+  },
+
+  "humanSupport": {
+    "before": "SimulatedSupportAdapter，两个子 Agent 用 LLM 扮演人工，回复带【模拟人工客服】前缀",
+    "after": {
+      "modes": { "HUMAN": "默认，真人坐席在管理端认领并打字回复，全程无模型参与", "SIMULATED": "保留，供无人值守演示" },
+      "console": "SupportConsoleService + /api/v1/admin/support/{queue,claim,reply,close}",
+      "claimConcurrency": "SupportAssignmentRepository.lockById 悲观锁",
+      "customerChannel": "GET /api/v1/sessions/{id}/handoff/messages，前端 3 秒轮询按消息 id 去重",
+      "frontend": "js/support-app.js + admin 第六个导航「人工坐席」",
+      "noFabricatedReply": "等待坐席期间客户只得到投递回执 awaitingOperator=true"
+    },
+    "httpEndToEnd": [
+      "转人工 -> HUMAN / WAITING",
+      "客户发消息 -> 「消息已记录，正在为您接入坐席，请稍候。」awaitingOperator=true",
+      "坐席队列 -> WAITING，待回复=true，最后一句=「我的订单一直没发货」",
+      "坐席认领并回复 -> 客户轮询取回原文，含模拟前缀=false",
+      "结束接管 -> assigned=false，交还智能客服"
+    ]
+  },
+
+  "retrieval": {
+    "before": "LexicalFileStore 关键词匹配",
+    "after": {
+      "model": "bge-small-zh-v1.5（ONNX int8 量化，512 维，MIT）",
+      "runtime": "spring-ai-transformers，模型随包交付",
+      "externalCallsAtRuntime": 0,
+      "diskSize": "22.9 MB model.onnx + 0.42 MB tokenizer.json",
+      "defaultBackend": "app.vector.backend=simple；APP_VECTOR_BACKEND=lexical 可退回",
+      "embeddingSwitch": "app.vector.embedding=local（默认 @Primary）| openai"
+    },
+    "paraphraseProbesThroughRealApi": [
+      { "query": "买回来觉得不合适，还能不能把东西送回去", "hit": "bootstrap:refund-policy.md", "score": 0.603 },
+      { "query": "进不去账号了，密码想不起来", "hit": "bootstrap:account-help.md", "score": 0.449 },
+      { "query": "快递大概几天能到我手上", "hit": "bootstrap:shipping-faq.md", "score": 0.585 }
+    ],
+    "controlGroup": "LocalEmbeddingRetrievalTest.keywordStoreMissesTheSameParaphrase —— 同样文档同样问法，关键词检索命中不了；若哪天能命中，该断言会失败并要求换更强的例子"
+  },
+
+  "preExistingDefectFixed": {
+    "id": "GW-01",
+    "problem": "内置工具的业务拒绝被上报为 SUCCEEDED",
+    "cause": "框架把工具返回的字符串再包一层引号，ToolExecutionGateway 的 readTree 拿到 TextNode，result.has(\"ok\") 恒为 false，业务拒绝判定从未生效",
+    "impact": "取消一张已取消的订单，数据层正确拒绝，但工具轨迹与模型看到的都是成功",
+    "fix": "解开外层字符串再判定，并带出真实拒绝原因",
+    "before": "cancel_order=SUCCEEDED",
+    "after": "cancel_order=BUSINESS_REJECTED 执行已停止：订单当前状态不可取消：已取消",
+    "regressionTest": "ResourceRuntimeSelfTest.builtinBusinessRejectionIsReportedAsRejectedNotSucceeded"
+  },
+
+  "otherFixes": [
+    "qa-isolated-backend.ps1 曾硬编码 --app.vector.backend=lexical，会把真向量挡掉；改为 -Vector 参数，默认 simple",
+    "PowerShell 5.1 按系统代码页读 .ps1，中文注释里的全角字符会破坏解析；三个 .ps1 补 UTF-8 BOM",
+    "-Fresh 清理容忍 onnxruntime 原生库被上一个 JVM 锁住的情况"
+  ],
+
+  "regression": {
+    "javaSuite": { "tests": 96, "failures": 0, "note": "改造前 83，新增 13" },
+    "qaResourceHttp": { "checks": 22, "passed": true },
+    "legacyRegression": { "checks": 8, "passed": true },
+    "rootIntegration": { "checks": 7, "passed": true },
+    "newTests": {
+      "BizOrderTicketTest": "5/5，含 8 线程并发取消只成功一次",
+      "SupportConsoleTest": "4/4，含 6 坐席并发认领只有一个成功",
+      "LocalEmbeddingRetrievalTest": "3/3，含关键词对照组"
+    },
+    "updatedTests": {
+      "AgentConfigurationTest": "主 Agent 停用后改为断言降级回复而非抛异常（按用户决定：异常不得抛到前台）",
+      "HumanSupportTest": "显式钉到 app.support.mode=SIMULATED，继续测原模拟路径",
+      "QaProviderProtocolTest": "「Kimi 默认无嵌入模型」改为更强的保证：嵌入在本机完成，任何供应商都收不到请求"
+    }
+  },
+
+  "notDone": [
+    "接企业微信/钉钉/飞书真实 IM：无租户与凭证，无法验证，不做未经验证的交付",
+    "接客户自有订单系统：属于配置（HTTP 工具 / MCP），非代码工作",
+    "嵌入用 int8 量化版以控体积；需要更高精度换 fp32（90.5 MB）即可，代码不变"
+  ]
+}

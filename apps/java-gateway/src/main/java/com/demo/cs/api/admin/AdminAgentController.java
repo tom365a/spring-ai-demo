@@ -6,6 +6,7 @@ import com.demo.cs.application.agentconfig.AgentDefinitionService;
 import com.demo.cs.application.agentconfig.AgentPublishService;
 import com.demo.cs.application.agentconfig.AgentTrialService;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/agents")
@@ -14,15 +15,18 @@ public class AdminAgentController {
     private final AgentDefinitionService definitionService;
     private final AgentPublishService publishService;
     private final AgentTrialService trialService;
+    private final com.demo.cs.application.resources.ManagedAgentRuntime managedRuntime;
 
     public AdminAgentController(
             AgentDefinitionService definitionService,
             AgentPublishService publishService,
-            AgentTrialService trialService
+            AgentTrialService trialService,
+            com.demo.cs.application.resources.ManagedAgentRuntime managedRuntime
     ) {
         this.definitionService = definitionService;
         this.publishService = publishService;
         this.trialService = trialService;
+        this.managedRuntime = managedRuntime;
     }
 
     @GetMapping
@@ -84,6 +88,20 @@ public class AdminAgentController {
         return ApiEnvelope.ok(publishService.publish(code, request, "admin"));
     }
 
+    @PostMapping("/{code}/enable")
+    public ApiEnvelope<PublishResponse> enable(@PathVariable String code,
+            @RequestHeader(value = "X-Admin-Role", required = false) String role) {
+        requireRole(role, "publisher");
+        return ApiEnvelope.ok(publishService.enable(code,"admin"));
+    }
+
+    @PostMapping("/{code}/disable")
+    public ApiEnvelope<AgentDetailResponse> disable(@PathVariable String code,
+            @RequestHeader(value = "X-Admin-Role", required = false) String role) {
+        requireRole(role, "publisher");
+        return ApiEnvelope.ok(publishService.disable(code,"admin"));
+    }
+
     @PostMapping("/{code}/rollback")
     public ApiEnvelope<PublishResponse> rollback(
             @PathVariable String code,
@@ -120,7 +138,9 @@ public class AdminAgentController {
             @RequestHeader(value = "X-Admin-Role", required = false) String role
     ) {
         requireRole(role, "editor");
-        return ApiEnvelope.ok(trialService.trial(code, request));
+        long start=System.currentTimeMillis();
+        var outcome=managedRuntime.trial(code,request.text(),!Boolean.FALSE.equals(request.useDraft()),"full_route".equals(request.mode()),"publisher".equalsIgnoreCase(role)||"admin".equalsIgnoreCase(role));
+        return ApiEnvelope.ok(new TrialResponse(outcome.answer(),outcome.agentName(),null,List.of(),outcome.toolCalls(),java.util.Map.of(),System.currentTimeMillis()-start,outcome.confirmRequired(),outcome.confirmationPayload(),outcome.diagnostics()));
     }
 
     static void requireRole(String roleHeader, String minRole) {
@@ -128,7 +148,7 @@ public class AdminAgentController {
         int have = rank(role);
         int need = rank(minRole);
         if (have < need) {
-            throw new SecurityException("insufficient admin role: need " + minRole + ", got " + role);
+            throw new SecurityException("权限不足：该操作需要「" + minRole + "」及以上角色，当前是「" + role + "」。请在右上角切换角色。");
         }
     }
 

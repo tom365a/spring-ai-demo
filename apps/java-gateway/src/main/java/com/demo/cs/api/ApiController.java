@@ -40,12 +40,22 @@ public class ApiController {
     private final CsToolInvocationRepository toolInvocationRepo;
     private final AppProperties props;
     private final ObjectMapper objectMapper;
+    private final OrderTicketTools orderTicketTools;
 
     @Value("${spring.ai.openai.chat.options.model:gpt-4o-mini}")
     private String llmModel;
 
+    @Value("${app.llm.provider:openai}")
+    private String llmProvider;
+
+    @Value("${app.llm.kimi.model:kimi-k3}")
+    private String kimiModel;
+
     @Value("${spring.ai.openai.embedding.options.model:text-embedding-3-small}")
     private String embeddingModel;
+
+    @Value("${app.vector.embedding:local}")
+    private String embeddingSource;
 
     public ApiController(
             SessionService sessionService,
@@ -56,7 +66,8 @@ public class ApiController {
             CsAgentRouteLogRepository routeLogRepo,
             CsToolInvocationRepository toolInvocationRepo,
             AppProperties props,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            OrderTicketTools orderTicketTools
     ) {
         this.sessionService = sessionService;
         this.orchestrator = orchestrator;
@@ -67,7 +78,12 @@ public class ApiController {
         this.toolInvocationRepo = toolInvocationRepo;
         this.props = props;
         this.objectMapper = objectMapper;
+        this.orderTicketTools = orderTicketTools;
     }
+
+    public record ActivityRequest(String userId){}
+    @PostMapping("/sessions/{sessionId}/activity")
+    public ApiEnvelope<?> activity(@PathVariable String sessionId,@RequestBody ActivityRequest body){return ApiEnvelope.ok(sessionService.activity(sessionId,body.userId()));}
 
     // ---- Sessions ----
 
@@ -206,8 +222,12 @@ public class ApiController {
         config.put("ragScoreThreshold", props.rag().scoreThreshold());
         config.put("routeConfidenceThreshold", props.routeConfidenceThreshold());
         config.put("sessionWindowSize", props.sessionWindowSize());
-        config.put("llmModel", llmModel);
-        config.put("embeddingModel", embeddingModel);
+        config.put("llmModel", "kimi".equals(llmProvider) ? kimiModel : llmModel);
+        config.put("llmProvider", llmProvider);
+        // 报实际在用的嵌入，而不是 OpenAI 的配置项：默认已改为随包交付的本地 ONNX 模型。
+        config.put("embeddingModel", "lexical".equals(props.vector().backend()) ? "disabled"
+                : "openai".equalsIgnoreCase(embeddingSource) ? embeddingModel : "bge-small-zh-v1.5（本地 ONNX）");
+        config.put("retrievalMode", "lexical".equals(props.vector().backend()) ? "本地关键词检索" : "向量检索");
         config.put("vectorBackend", props.vector().backend());
         config.put("agentConfigEnabled", props.agentConfig().enabled());
         config.put("agentConfigFallbackToLegacy", props.agentConfig().fallbackToLegacy());
@@ -269,7 +289,7 @@ public class ApiController {
 
     @GetMapping("/debug/tickets")
     public ApiEnvelope<Map<String, Object>> debugTickets() {
-        return ApiEnvelope.ok(Map.of("items", OrderTicketTools.mockTickets()));
+        return ApiEnvelope.ok(Map.of("items", orderTicketTools.tickets()));
     }
 
     // ---- Helpers ----
@@ -307,7 +327,8 @@ public class ApiController {
                 request.confirm(),
                 request.confirmPayload(),
                 request.locale(),
-                opts
+                opts,
+                request.supervisorCode()
         );
     }
 

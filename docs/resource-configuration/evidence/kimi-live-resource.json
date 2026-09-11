@@ -1,0 +1,77 @@
+{
+  "at": "2026-09-10T16:05:08.752Z",
+  "base": "http://localhost:18082/api/v1",
+  "provider": "KIMI",
+  "checks": [
+    {
+      "name": "Real kimi-k3 selected by resource, performs HTTP read and returns unpredictable receipt",
+      "result": {
+        "answer": "HTTP_RECEIPT_2c0bcd04bb7a",
+        "agentCode": "live_resource_mtvpxmog_agent",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [
+          {
+            "name": "live_resource_mtvpxmog_http",
+            "arguments": {},
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 9,
+            "success": true,
+            "resourceId": "45ad147a-860d-4f25-9f72-3aca3b7a466b",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "promptsRendered": {},
+        "latencyMs": 11709,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "e0a4ce9e-08a4-478d-a7b9-198283390edb",
+          "models": [
+            {
+              "agentCode": "live_resource_mtvpxmog_agent",
+              "agentVersion": 1,
+              "resourceId": "369b4f89-8438-4d2b-bd0a-6d51bf5944e7",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 223,
+                "completionTokens": 101,
+                "totalTokens": 324
+              }
+            },
+            {
+              "agentCode": "live_resource_mtvpxmog_agent",
+              "agentVersion": 1,
+              "resourceId": "369b4f89-8438-4d2b-bd0a-6d51bf5944e7",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 395,
+                "completionTokens": 92,
+                "totalTokens": 487
+              }
+            }
+          ],
+          "remainingMs": 108314,
+          "transfers": 0,
+          "agents": {
+            "live_resource_mtvpxmog_agent": {
+              "toolRounds": 1,
+              "remainingMs": 108314,
+              "maxToolRounds": 1
+            }
+          }
+        }
+      },
+      "fixtureRequests": 1,
+      "fixtureWrites": 0
+    }
+  ],
+  "passed": true
+}

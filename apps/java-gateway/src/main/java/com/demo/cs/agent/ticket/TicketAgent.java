@@ -92,7 +92,7 @@ public class TicketAgent implements SubAgent {
         payload.put("agentName", name());
         return SubAgentResult.confirm(name(),
                 "将为您创建「" + category + "」工单" + (orderId != null ? "（关联 " + orderId + "）" : "")
-                        + "。请回复「确认」继续。",
+                        + "。请在下方确认卡片点「确认执行」继续。",
                 payload);
     }
 

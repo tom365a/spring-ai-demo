@@ -21,23 +21,58 @@ import java.util.Map;
 import java.util.UUID;
 
 @Service
+@org.springframework.scheduling.annotation.EnableScheduling
 public class SessionService {
 
     private final CsSessionRepository sessionRepo;
     private final CsMessageRepository messageRepo;
     private final ObjectMapper objectMapper;
     private final int windowSize;
+    private final ConversationMonitor monitor;
+    private final com.demo.cs.infrastructure.persistence.SupportAssignmentRepository supportAssignments;
+    private final long abandonSeconds;
 
     public SessionService(
             CsSessionRepository sessionRepo,
             CsMessageRepository messageRepo,
             ObjectMapper objectMapper,
-            com.demo.cs.config.AppProperties props
+            com.demo.cs.config.AppProperties props, ConversationMonitor monitor,
+            com.demo.cs.infrastructure.persistence.SupportAssignmentRepository supportAssignments,
+            @org.springframework.beans.factory.annotation.Value("${app.support.abandon-timeout-seconds:1800}") long abandonSeconds
     ) {
+        this.monitor=monitor;
         this.sessionRepo = sessionRepo;
         this.messageRepo = messageRepo;
         this.objectMapper = objectMapper;
         this.windowSize = props.sessionWindowSize();
+        this.supportAssignments = supportAssignments;
+        this.abandonSeconds = abandonSeconds;
+    }
+
+    /**
+     * 已转人工、还没结束接管的会话，客户就是在排队等真人，静默是正常状态，不能按 5 分钟闲置关掉。
+     * 但也不能永远不回收：客户关掉页面就再也回不来，这条会话会一直占着坐席队列，
+     * 下次他重新转人工还会排在自己这条影子会话后面。所以放宽到 abandonSeconds，
+     * 到点连同坐席分配一起关掉，让它退出队列。活跃度取客户和坐席任一方的最后动作。
+     *
+     * @return true 表示还在接管窗口内，本轮不回收
+     */
+    private boolean withinOperatorWindow(CsSession s) {
+        var open = supportAssignments.findById(s.getId())
+                .filter(a -> !com.demo.cs.domain.SupportAssignment.CLOSED.equals(a.status));
+        if (open.isEmpty()) return false;
+        var a = open.get();
+        Instant last = s.getLastInputAt();
+        for (Instant candidate : new Instant[]{a.assignedAt, a.lastCustomerAt, a.lastOperatorAt}) {
+            if (candidate != null && candidate.isAfter(last)) last = candidate;
+        }
+        if (last.plusSeconds(abandonSeconds).isAfter(Instant.now())) return true;
+        a.status = com.demo.cs.domain.SupportAssignment.CLOSED;
+        a.closedAt = Instant.now();
+        supportAssignments.save(a);
+        monitor.event(s.getId(), null, "HUMAN_ABANDONED", a.operatorName,
+                Map.of("reason", "ABANDONED_TIMEOUT", "abandonSeconds", abandonSeconds));
+        return false;
     }
 
     @Transactional
@@ -49,11 +84,15 @@ public class SessionService {
         s.setStatus("active");
         s.setCreatedAt(Instant.now());
         s.setUpdatedAt(Instant.now());
-        return sessionRepo.save(s);
+        s.setLastInputAt(Instant.now());
+        sessionRepo.save(s);
+        monitor.event(s.getId(),null,"SESSION_OPENED",null,Map.of("channel",s.getChannel()));
+        return s;
     }
 
+    @Transactional
     public CsSession getSession(String sessionId) {
-        return sessionRepo.findById(sessionId).orElse(null);
+        CsSession s=sessionRepo.locked(sessionId).orElse(null); if(s!=null)expire(s); return s;
     }
 
     public List<CsSession> listByUser(String userId, int limit) {
@@ -64,7 +103,10 @@ public class SessionService {
     @Transactional
     public CsSession closeSession(String sessionId) {
         CsSession s = requireSession(sessionId);
+        if(s.getStatus().equals("closed"))return s;
         s.setStatus("closed");
+        s.setCloseReason("MANUAL");s.setEndedAt(Instant.now());
+        monitor.event(sessionId,null,"SESSION_CLOSED",null,Map.of("reason","MANUAL","endedAt",Instant.now().toString()));
         s.setConfirmationPayload(null);
         s.setUpdatedAt(Instant.now());
         return sessionRepo.save(s);
@@ -81,6 +123,7 @@ public class SessionService {
             List<String> attachmentIds
     ) {
         CsSession session = requireSession(sessionId);
+        if("user".equals(role)){expire(session);if("closed".equals(session.getStatus()))throw new IllegalStateException("会话已关闭，请创建新会话");session.setLastInputAt(Instant.now());if(!"PENDING".equals(session.getResolutionStatus())){session.setResolutionStatus("PENDING");monitor.event(sessionId,null,"ASSESSMENT_RESET",null,Map.of("reason","NEW_USER_MESSAGE","status","PENDING"));}}
         CsMessage m = new CsMessage();
         m.setId(newId("m_"));
         m.setSessionId(sessionId);
@@ -141,6 +184,7 @@ public class SessionService {
     @Transactional
     public void setConfirmState(String sessionId, Map<String, Object> payload) {
         CsSession s = requireSession(sessionId);
+        if("closed".equals(s.getStatus()))return;
         s.setStatus("pending_confirm");
         s.setConfirmationPayload(toJson(payload));
         s.setUpdatedAt(Instant.now());
@@ -150,6 +194,7 @@ public class SessionService {
     @Transactional
     public void clearConfirm(String sessionId) {
         CsSession s = requireSession(sessionId);
+        if("closed".equals(s.getStatus()))return;
         s.setStatus("active");
         s.setConfirmationPayload(null);
         s.setUpdatedAt(Instant.now());
@@ -200,8 +245,24 @@ public class SessionService {
         );
     }
 
+
+    @Transactional public synchronized Map<String,Object> activity(String id,String userId){
+        var s=requireSession(id);if(!s.getUserId().equals(userId))throw new SecurityException("userId mismatch");expire(s);
+        if(!"closed".equals(s.getStatus())){s.setLastInputAt(Instant.now());sessionRepo.save(s);}
+        return monitor.summary(s);
+    }
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelay=1000)
+    @Transactional public synchronized void expireIdleSessions(){for(var id:sessionRepo.expiredIds(Instant.now().minusSeconds(300)))sessionRepo.locked(id).ifPresent(this::expire);}
+    private void expire(CsSession s){
+        if(withinOperatorWindow(s))return;
+        if(!"closed".equals(s.getStatus())&&!s.getLastInputAt().plusSeconds(300).isAfter(Instant.now())){
+            Instant ended=s.getLastInputAt().plusSeconds(300);s.setStatus("closed");s.setCloseReason("INACTIVITY_TIMEOUT");s.setEndedAt(ended);s.setConfirmationPayload(null);s.setUpdatedAt(ended);sessionRepo.save(s);
+            monitor.event(s.getId(),null,"SESSION_CLOSED",null,Map.of("reason","INACTIVITY_TIMEOUT","endedAt",ended.toString()));
+        }
+    }
+
     private CsSession requireSession(String sessionId) {
-        return sessionRepo.findById(sessionId)
+        return sessionRepo.locked(sessionId)
                 .orElseThrow(() -> new IllegalArgumentException("session not found: " + sessionId));
     }
 

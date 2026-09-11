@@ -51,6 +51,7 @@ public class ConfigurableAgentInvoker {
     private final ChildrenCatalogRenderer childrenCatalogRenderer;
     private final ToolBindingFactory toolBindingFactory;
     private final LocalToolCatalog toolCatalog;
+    private final com.demo.cs.infrastructure.catalog.LocalSkillCatalog skillCatalog;
     private final DefinitionRegistry registry;
     private final KnowledgeService knowledgeService;
     private final McpBridgeClient mcpClient;
@@ -66,6 +67,7 @@ public class ConfigurableAgentInvoker {
             ChildrenCatalogRenderer childrenCatalogRenderer,
             ToolBindingFactory toolBindingFactory,
             LocalToolCatalog toolCatalog,
+            com.demo.cs.infrastructure.catalog.LocalSkillCatalog skillCatalog,
             DefinitionRegistry registry,
             KnowledgeService knowledgeService,
             McpBridgeClient mcpClient,
@@ -80,6 +82,7 @@ public class ConfigurableAgentInvoker {
         this.childrenCatalogRenderer = childrenCatalogRenderer;
         this.toolBindingFactory = toolBindingFactory;
         this.toolCatalog = toolCatalog;
+        this.skillCatalog = skillCatalog;
         this.registry = registry;
         this.knowledgeService = knowledgeService;
         this.mcpClient = mcpClient;
@@ -99,10 +102,11 @@ public class ConfigurableAgentInvoker {
             List<Map<String, Object>> recentMessages,
             Map<String, Object> confirmationPayload
     ) {
+        if (filterAvailableChildren(def.children()).isEmpty()) return RouteDecision.unclear("当前主Agent没有可用子Agent，请在管理页启用关联子Agent。");
         RouteDecision decision = tryLlmRoute(def, session, userId, text, hasAttachments,
                 attachmentCount, recentMessages, confirmationPayload);
         if (decision == null) {
-            decision = heuristicRoute(text, hasAttachments, childrenCatalogRenderer.enabledCodes(def.children()));
+            decision = heuristicRoute(text, hasAttachments, childrenCatalogRenderer.enabledCodes(filterAvailableChildren(def.children())));
         }
         decision = enrichSlots(decision, text);
         decision = normalizeTarget(decision, def);
@@ -140,7 +144,7 @@ public class ConfigurableAgentInvoker {
         String retrievedBlocks = "";
         String mcpBlocks = "";
         List<Citation> citations = new ArrayList<>();
-        if (def.capabilities() != null && def.capabilities().ragEnabled()) {
+        if (skillCatalog.ragEnabled(def)) {
             try {
                 List<Document> docs = knowledgeService.retrieveDocuments(request.text(), props.rag().topK());
                 citations.addAll(knowledgeService.toCitations(docs));
@@ -156,12 +160,14 @@ public class ConfigurableAgentInvoker {
 
         Map<String, String> vars = buildVars(def, request, retrievedBlocks, mcpBlocks, null);
         String system = promptRenderer.render(
-                def.prompts() != null ? def.prompts().systemPrompt() : "", vars);
+                def.prompts() != null ? def.prompts().systemPrompt() : "", vars) + skillCatalog.instructions(def);
         String userPrompt = promptRenderer.render(
                 def.prompts() != null ? def.prompts().userPromptTemplate() : "{{text}}", vars);
 
+        if (skillCatalog.ragEnabled(def) && !userPrompt.contains(retrievedBlocks)) userPrompt += "\n【检索结果】\n" + retrievedBlocks;
+        final String renderedUserPrompt = userPrompt;
         boolean enableVision = def.modelConfig() != null && def.modelConfig().visionEnabled();
-        ToolCallback[] tools = toolBindingFactory.resolve(def.tools());
+        ToolCallback[] tools = toolBindingFactory.resolve(allowedTools(def));
 
         orderTicketTools.setSessionId(request.sessionId());
         defectCompensationTools.setSessionId(request.sessionId());
@@ -169,7 +175,7 @@ public class ConfigurableAgentInvoker {
             var promptSpec = chatClientBuilder.build().prompt().system(system);
             if (enableVision && request.attachments() != null && !request.attachments().isEmpty()) {
                 promptSpec = promptSpec.user(u -> {
-                    u.text(userPrompt);
+                    u.text(renderedUserPrompt);
                     for (AttachmentView att : request.attachments()) {
                         u.media(new Media(
                                 org.springframework.util.MimeTypeUtils.parseMimeType(att.contentType()),
@@ -181,7 +187,7 @@ public class ConfigurableAgentInvoker {
                 promptSpec = promptSpec.user(userPrompt);
             }
             if (tools.length > 0) {
-                promptSpec = promptSpec.tools(tools);
+                promptSpec = promptSpec.toolCallbacks(tools);
             }
             String raw = promptSpec.call().content();
             if (enableVision) {
@@ -190,9 +196,6 @@ public class ConfigurableAgentInvoker {
             return new SubAgentResult(agentCode, raw, citations, List.of(), false, null, null, null, null);
         } catch (Exception e) {
             log.warn("ConfigurableAgentInvoker handle failed for {}: {}", agentCode, e.getMessage());
-            if ("defect_comp".equals(agentCode)) {
-                return defectCompHeuristic(request);
-            }
             return SubAgentResult.simple(agentCode,
                     "服务暂时不可用（" + e.getClass().getSimpleName() + "）。请检查 LLM_API_KEY / base-url 后重试。");
         } finally {
@@ -285,13 +288,17 @@ public class ConfigurableAgentInvoker {
     public Map<String, String> renderPromptsPreview(AgentDefinition def, SubAgentRequest request) {
         Map<String, String> vars = buildVars(def, request, "", "", null);
         String system = promptRenderer.render(
-                def.prompts() != null ? def.prompts().systemPrompt() : "", vars);
+                def.prompts() != null ? def.prompts().systemPrompt() : "", vars) + skillCatalog.instructions(def);
         String user = promptRenderer.render(
                 def.prompts() != null ? def.prompts().userPromptTemplate() : "{{text}}", vars);
         return Map.of(
                 "system", truncate(system, 4000),
                 "user", truncate(user, 4000)
         );
+    }
+
+    public List<String> allowedTools(AgentDefinition def) {
+        return skillCatalog.effectiveTools(def).stream().filter(c -> !toolCatalog.isWrite(c) || ("WORKER".equals(def.type()) && def.policies().writeToolsAllowed())).toList();
     }
 
     private SubAgentResult maybeConfirmShortCircuit(AgentDefinition def, String agentCode, SubAgentRequest request) {
@@ -301,7 +308,7 @@ public class ConfigurableAgentInvoker {
                     .filter(toolCatalog::isWrite)
                     .toList();
         }
-        if (!requireConfirm.contains("cancel_order")) {
+        if (!allowedTools(def).contains("cancel_order") || !requireConfirm.contains("cancel_order")) {
             return null;
         }
         String text = request.text() != null ? request.text() : "";
@@ -318,7 +325,7 @@ public class ConfigurableAgentInvoker {
         payload.put("userId", request.userId());
         payload.put("reason", "用户申请取消");
         payload.put("agentName", agentCode);
-        String answer = "您申请取消订单 " + orderId + "。此操作不可撤销，请确认是否继续？回复「确认」即可执行取消。";
+        String answer = "您申请取消订单 " + orderId + "。此操作不可撤销，请在下方确认卡片点「确认执行」继续。";
         return SubAgentResult.confirm(agentCode, answer, payload);
     }
 
@@ -349,7 +356,7 @@ public class ConfigurableAgentInvoker {
             vars.put("mcpBlocks", "");
 
             String system = promptRenderer.render(
-                    def.prompts() != null ? def.prompts().systemPrompt() : "", vars);
+                    def.prompts() != null ? def.prompts().systemPrompt() : "", vars) + skillCatalog.instructions(def);
             if (!system.contains(childrenCatalog) && !childrenCatalog.isBlank()) {
                 system = system + "\n\n" + childrenCatalog;
             }
@@ -379,12 +386,10 @@ public class ConfigurableAgentInvoker {
                     text
             );
 
-            String raw = chatClientBuilder.build()
-                    .prompt()
-                    .system(system)
-                    .user(userPrompt)
-                    .call()
-                    .content();
+            var prompt = chatClientBuilder.build().prompt().system(system).user(userPrompt);
+            ToolCallback[] callbacks = toolBindingFactory.resolve(allowedTools(def));
+            if (callbacks.length > 0) prompt = prompt.toolCallbacks(callbacks);
+            String raw = prompt.call().content();
             return parseRouteDecision(raw);
         } catch (Exception e) {
             log.warn("Configurable supervisor route failed: {}", e.getMessage());

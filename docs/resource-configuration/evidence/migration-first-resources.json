@@ -1,0 +1,156 @@
+[
+  {
+    "id": "326b00a8-0334-4eac-bf1e-fe2a5f9e4a77",
+    "code": "model_kimi",
+    "kind": "MODEL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "aad4ef58-6551-4ff0-b19a-6bcbe11f97fb",
+    "code": "model_openai",
+    "kind": "MODEL",
+    "publishedVersion": 1,
+    "enabled": false
+  },
+  {
+    "id": "f143089b-9358-42bd-a2c2-b257568ba2b0",
+    "code": "clear_response",
+    "kind": "SKILL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "b5315d58-ef1b-46a2-aa70-bf291bd84734",
+    "code": "knowledge_answer",
+    "kind": "SKILL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "32ae03bf-a44f-4a7d-b397-100a0b8e532c",
+    "code": "order_lookup",
+    "kind": "SKILL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "6f67112c-9924-48f0-a1d8-cbe428023315",
+    "code": "low_user_value_callback",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "b2568cda-7ce7-4824-a014-571171f73f2e",
+    "code": "create_ticket",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "1e40f345-3875-451c-afca-d4ad7faf3569",
+    "code": "cancel_order",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "96ca3e57-31a4-455d-b693-bc70b3820bd6",
+    "code": "confirm_as_order_callback",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "d628879b-d8c6-4f51-a364-2ddb69866ee0",
+    "code": "apply_after_sale_success",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "62fe2d85-3f76-4e72-8802-58ac5ae8c8d2",
+    "code": "ask_for_defect_image",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "25b08f7b-fab7-463f-b6e9-99929d31b3e7",
+    "code": "ask_for_sub_order",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "51bdeaf4-7424-4746-aaf7-f6c2bea31f58",
+    "code": "reject_as_order_callback",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "3a7e9758-a999-4ff1-a09f-ab1139fa06a5",
+    "code": "xcbc_sub_order_route",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "67a10012-264d-48c9-b0d9-881c7321a50d",
+    "code": "ask_for_defect_order",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "e8b108c5-1846-4eb9-bd4b-55e7b7bf7b2b",
+    "code": "query_logistics",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "11011a13-d72d-47ed-94b0-ef3d799338e3",
+    "code": "query_order",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "5356a14d-4eb1-4f9d-8154-63425014fd36",
+    "code": "xcbc_route",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "c50f99e0-18f8-4160-ad41-91bde9caec9b",
+    "code": "user_value_router",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "46f5a53f-d4d9-411e-976c-460b0f3851cb",
+    "code": "aggre_as_order_callback",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "c3fa31a6-02b1-498b-8670-d3d235ab4d56",
+    "code": "xcbc_process_callback",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  },
+  {
+    "id": "908ece19-efdd-4161-9579-d0e9d26cc90d",
+    "code": "escalate_human",
+    "kind": "TOOL",
+    "publishedVersion": 1,
+    "enabled": true
+  }
+]

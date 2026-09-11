@@ -36,7 +36,7 @@ public record AppProperties(
         if (mcp == null) mcp = new Mcp(false, "http://localhost:3100");
         if (vector == null) vector = new Vector("pgvector");
         if (agentConfig == null) {
-            agentConfig = new AgentConfig(false, true, true, 20000, 60);
+            agentConfig = new AgentConfig(true, true, false, 20000, 60);
         }
         if (sessionWindowSize <= 0) sessionWindowSize = 10;
         if (routeConfidenceThreshold <= 0) routeConfidenceThreshold = 0.55;

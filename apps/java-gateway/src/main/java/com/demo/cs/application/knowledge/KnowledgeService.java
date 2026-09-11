@@ -89,7 +89,8 @@ public class KnowledgeService {
             String title = String.valueOf(meta.getOrDefault("title", "知识片段"));
             double score = meta.get("distance") instanceof Number n ? 1.0 - n.doubleValue()
                     : meta.get("score") instanceof Number s ? s.doubleValue() : 0.0;
-            out.add(new Citation(docId, title, d.getText(), score, "vector", new LinkedHashMap<>(meta)));
+            out.add(new Citation(docId, title, d.getText(), score,
+                    String.valueOf(meta.getOrDefault("retrieval", "vector")), new LinkedHashMap<>(meta)));
         }
         return out;
     }

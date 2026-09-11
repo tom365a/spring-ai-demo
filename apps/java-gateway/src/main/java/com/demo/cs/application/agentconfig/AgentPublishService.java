@@ -1,163 +1,105 @@
 package com.demo.cs.application.agentconfig;
 
-import com.demo.cs.agent.runtime.DefinitionRegistry;
-import com.demo.cs.agent.runtime.PublishedAgent;
+import com.demo.cs.agent.runtime.*;
 import com.demo.cs.api.dto.AdminDtos.*;
-import com.demo.cs.application.agentconfig.model.AgentDefinition;
-import com.demo.cs.domain.AgtAgent;
-import com.demo.cs.domain.AgtAgentVersion;
-import com.demo.cs.infrastructure.persistence.AgtAgentRepository;
-import com.demo.cs.infrastructure.persistence.AgtAgentVersionRepository;
+import com.demo.cs.domain.*;
+import com.demo.cs.config.AppProperties;
+import com.demo.cs.infrastructure.persistence.*;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+/** Single instance lifecycle lock includes commit and runtime refresh. */
 @Service
 public class AgentPublishService {
-
-    private final AgtAgentRepository agentRepo;
-    private final AgtAgentVersionRepository versionRepo;
-    private final AgentDefinitionService definitionService;
+    private final AgtAgentRepository agents;
+    private final AgtAgentVersionRepository versions;
+    private final AgentDefinitionService definitions;
     private final AgentDefinitionValidator validator;
     private final DefinitionRegistry registry;
-
-    public AgentPublishService(
-            AgtAgentRepository agentRepo,
-            AgtAgentVersionRepository versionRepo,
-            AgentDefinitionService definitionService,
-            AgentDefinitionValidator validator,
-            DefinitionRegistry registry
-    ) {
-        this.agentRepo = agentRepo;
-        this.versionRepo = versionRepo;
-        this.definitionService = definitionService;
-        this.validator = validator;
-        this.registry = registry;
+    private final AppProperties props;
+    private final TransactionTemplate tx;
+    public AgentPublishService(AgtAgentRepository agents, AgtAgentVersionRepository versions,
+        AgentDefinitionService definitions, AgentDefinitionValidator validator, DefinitionRegistry registry,
+        AppProperties props, PlatformTransactionManager manager) {
+        this.agents=agents; this.versions=versions; this.definitions=definitions; this.validator=validator;
+        this.registry=registry; this.props=props; this.tx=new TransactionTemplate(manager);
     }
-
-    @Transactional
-    public PublishResponse publish(String code, PublishRequest request, String publishedBy) {
-        synchronized (lockFor(code)) {
-            AgtAgent agent = definitionService.require(code);
-            AgentDefinition def = definitionService.readDefinition(agent.getDraftJson());
-            var result = validator.validate(def);
-            if (!result.ok()) {
-                throw new AgentValidationException("agent validation failed", result.errors(), result.warnings());
+    public synchronized PublishResponse publish(String code, PublishRequest request, String actor) {
+        requireConfig();
+        PublishResponse response = tx.execute(status -> {
+            AgtAgent agent = locked(code);
+            return snapshot(agent, agent.getDraftJson(), request == null ? null : request.remark(), actor, false);
+        });
+        reloadRegistryFromDb();
+        return response;
+    }
+    public synchronized PublishResponse enable(String code, String actor) {
+        requireConfig();
+        PublishResponse response = tx.execute(status -> {
+            var agent=locked(code);
+            validate(agent.getDraftJson());
+            var current=agent.getPublishedVersion()==null ? Optional.<AgtAgentVersion>empty() : versions.findByAgentCodeAndVersion(code,agent.getPublishedVersion());
+            if (current.isPresent() && current.get().getSnapshotJson().equals(agent.getDraftJson())) {
+                agent.setEnabled(true); agent.setUpdatedAt(Instant.now()); agents.saveAndFlush(agent);
+                return new PublishResponse(code,agent.getPublishedVersion(),agent.getUpdatedAt(),agent.getStatus());
             }
-
-            int nextVer = (agent.getPublishedVersion() != null ? agent.getPublishedVersion() : 0) + 1;
-            Instant now = Instant.now();
-
-            AgtAgentVersion version = new AgtAgentVersion();
-            version.setAgentCode(code);
-            version.setVersion(nextVer);
-            version.setSnapshotJson(agent.getDraftJson());
-            version.setPublishedAt(now);
-            version.setPublishedBy(publishedBy != null ? publishedBy : "admin");
-            version.setRemark(request != null ? request.remark() : null);
-            versionRepo.save(version);
-
-            agent.setStatus("PUBLISHED");
-            agent.setPublishedVersion(nextVer);
-            agent.setUpdatedAt(now);
-            agent.setUpdatedBy(publishedBy != null ? publishedBy : "admin");
-            if (request != null && request.remark() != null) {
-                agent.setRemark(request.remark());
-            }
-            agentRepo.save(agent);
-
-            if (agent.isEnabled()) {
-                registry.replace(code, new PublishedAgent(code, nextVer, def));
-            } else {
-                registry.remove(code);
-            }
-
-            return new PublishResponse(code, nextVer, now, agent.getStatus());
+            return snapshot(agent,agent.getDraftJson(),"启用配置",actor,false);
+        });
+        reloadRegistryFromDb(); return response;
+    }
+    public synchronized AgentDetailResponse disable(String code, String actor) {
+        tx.executeWithoutResult(status -> {
+            var agent=locked(code); agent.setEnabled(false); agent.setUpdatedBy(actor); agent.setUpdatedAt(Instant.now()); agents.saveAndFlush(agent);
+        });
+        registry.remove(code);
+        return definitions.get(code);
+    }
+    public synchronized PublishResponse rollback(String code, RollbackRequest request, String actor) {
+        requireConfig();
+        if (request==null) throw new IllegalArgumentException("version is required");
+        PublishResponse response=tx.execute(status -> {
+            var agent=locked(code);
+            var previous=versions.findByAgentCodeAndVersion(code,request.version()).orElseThrow(() -> new IllegalArgumentException("version not found"));
+            return snapshot(agent,previous.getSnapshotJson(),request.remark(),actor,true);
+        });
+        reloadRegistryFromDb(); return response;
+    }
+    private PublishResponse snapshot(AgtAgent agent, String json, String remark, String actor, boolean rollback) {
+        validate(json);
+        int next=Optional.ofNullable(agent.getPublishedVersion()).orElse(0)+1;
+        Instant now=Instant.now();
+        var version=new AgtAgentVersion(); version.setAgentCode(agent.getCode()); version.setVersion(next);
+        version.setSnapshotJson(json); version.setPublishedAt(now); version.setPublishedBy(actor); version.setRemark(remark); versions.save(version);
+        agent.setEnabled(true); agent.setStatus("PUBLISHED"); agent.setPublishedVersion(next); agent.setUpdatedAt(now); agent.setUpdatedBy(actor);
+        if (rollback) {
+            agent.setDraftJson(json); agent.setDraftRevision(agent.getDraftRevision()+1);
+            var def=definitions.readDefinition(json); agent.setName(def.name()); agent.setDescription(def.description());
         }
+        agents.saveAndFlush(agent);
+        return new PublishResponse(agent.getCode(),next,now,"PUBLISHED");
     }
-
-    @Transactional
-    public PublishResponse rollback(String code, RollbackRequest request, String publishedBy) {
-        if (request == null) throw new IllegalArgumentException("version is required");
-        synchronized (lockFor(code)) {
-            AgtAgent agent = definitionService.require(code);
-            AgtAgentVersion historical = versionRepo.findByAgentCodeAndVersion(code, request.version())
-                    .orElseThrow(() -> new IllegalArgumentException("version not found: " + request.version()));
-
-            AgentDefinition def = definitionService.readDefinition(historical.getSnapshotJson());
-            var result = validator.validate(def);
-            if (!result.ok()) {
-                throw new AgentValidationException("agent validation failed", result.errors(), result.warnings());
-            }
-
-            int nextVer = (agent.getPublishedVersion() != null ? agent.getPublishedVersion() : 0) + 1;
-            Instant now = Instant.now();
-
-            AgtAgentVersion version = new AgtAgentVersion();
-            version.setAgentCode(code);
-            version.setVersion(nextVer);
-            version.setSnapshotJson(historical.getSnapshotJson());
-            version.setPublishedAt(now);
-            version.setPublishedBy(publishedBy != null ? publishedBy : "admin");
-            version.setRemark(request.remark() != null ? request.remark() : "rollback to v" + request.version());
-            versionRepo.save(version);
-
-            agent.setDraftJson(historical.getSnapshotJson());
-            agent.setStatus("PUBLISHED");
-            agent.setPublishedVersion(nextVer);
-            agent.setDraftRevision(agent.getDraftRevision() + 1);
-            agent.setUpdatedAt(now);
-            agent.setUpdatedBy(publishedBy != null ? publishedBy : "admin");
-            agent.setRemark(version.getRemark());
-            agentRepo.save(agent);
-
-            if (agent.isEnabled()) {
-                registry.replace(code, new PublishedAgent(code, nextVer, def));
-            } else {
-                registry.remove(code);
-            }
-
-            return new PublishResponse(code, nextVer, now, agent.getStatus());
-        }
+    private void validate(String json) {
+        var result=validator.validate(definitions.readDefinition(json));
+        if (!result.ok()) throw new AgentValidationException("配置校验失败",result.errors(),result.warnings());
     }
-
+    private AgtAgent locked(String code) { return agents.findForUpdateByCode(code).orElseThrow(() -> new IllegalArgumentException("agent not found: "+code)); }
+    private void requireConfig() { if (!props.agentConfig().enabled()) throw new IllegalStateException("配置运行模式已关闭，请开启 APP_AGENT_CONFIG_ENABLED 后启用Agent"); }
     public VersionListResponse listVersions(String code) {
-        definitionService.require(code);
-        List<VersionItem> items = new ArrayList<>();
-        for (AgtAgentVersion v : versionRepo.findByAgentCodeOrderByVersionDesc(code)) {
-            items.add(new VersionItem(v.getVersion(), v.getPublishedAt(), v.getPublishedBy(), v.getRemark()));
+        definitions.require(code);
+        return new VersionListResponse(versions.findByAgentCodeOrderByVersionDesc(code).stream().map(v -> new VersionItem(v.getVersion(),v.getPublishedAt(),v.getPublishedBy(),v.getRemark())).toList());
+    }
+    public VersionSnapshotResponse getVersion(String code,int version) {
+        var v=versions.findByAgentCodeAndVersion(code,version).orElseThrow(() -> new IllegalArgumentException("version not found"));
+        return new VersionSnapshotResponse(v.getVersion(),v.getPublishedAt(),v.getPublishedBy(),v.getRemark(),definitions.readDefinition(v.getSnapshotJson()));
+    }
+    public synchronized void reloadRegistryFromDb() {
+        List<PublishedAgent> loaded=new ArrayList<>();
+        for(var agent:agents.findByStatusAndEnabledTrue("PUBLISHED")) {
+            if(agent.getPublishedVersion()!=null) versions.findByAgentCodeAndVersion(agent.getCode(),agent.getPublishedVersion()).ifPresent(v -> loaded.add(new PublishedAgent(agent.getCode(),v.getVersion(),definitions.readDefinition(v.getSnapshotJson()))));
         }
-        return new VersionListResponse(items);
-    }
-
-    public VersionSnapshotResponse getVersion(String code, int version) {
-        definitionService.require(code);
-        AgtAgentVersion v = versionRepo.findByAgentCodeAndVersion(code, version)
-                .orElseThrow(() -> new IllegalArgumentException("version not found: " + version));
-        return new VersionSnapshotResponse(
-                v.getVersion(), v.getPublishedAt(), v.getPublishedBy(), v.getRemark(),
-                definitionService.readDefinition(v.getSnapshotJson())
-        );
-    }
-
-    public void reloadRegistryFromDb() {
-        List<PublishedAgent> enabled = new ArrayList<>();
-        for (AgtAgent agent : agentRepo.findByStatusAndEnabledTrue("PUBLISHED")) {
-            if (agent.getPublishedVersion() == null) continue;
-            versionRepo.findByAgentCodeAndVersion(agent.getCode(), agent.getPublishedVersion())
-                    .ifPresent(v -> enabled.add(new PublishedAgent(
-                            agent.getCode(),
-                            v.getVersion(),
-                            definitionService.readDefinition(v.getSnapshotJson())
-                    )));
-        }
-        registry.clearAndLoad(enabled);
-    }
-
-    private Object lockFor(String code) {
-        return ("agt-publish-" + code).intern();
+        registry.clearAndLoad(loaded);
     }
 }

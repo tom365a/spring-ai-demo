@@ -90,8 +90,13 @@ public final class AdminDtos {
             List<Map<String, Object>> routeTrace,
             List<ToolCallRecord> toolCalls,
             Map<String, String> promptsRendered,
-            long latencyMs
-    ) {}
+            long latencyMs,
+            boolean confirmRequired,
+            Map<String,Object> confirmationPayload,
+            Map<String,Object> diagnostics
+    ) {
+        public TrialResponse(String answer,String agentCode,Integer agentVersion,List<Map<String,Object>> routeTrace,List<ToolCallRecord> toolCalls,Map<String,String> promptsRendered,long latencyMs) {this(answer,agentCode,agentVersion,routeTrace,toolCalls,promptsRendered,latencyMs,false,null,Map.of());}
+    }
 
     public record CatalogToolItem(
             String code,

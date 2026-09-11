@@ -1,0 +1,29 @@
+{
+  "at": "2026-09-11T00:22:39.554Z",
+  "checks": [
+    {
+      "name": "Real main-to-child trace and public history",
+      "sessionId": "s_fb6eecfd048b",
+      "eventTypes": [
+        "SESSION_OPENED",
+        "TURN_STARTED",
+        "MODEL_COMPLETED",
+        "INTENT_RECOGNIZED",
+        "AGENT_TRANSFER",
+        "MODEL_COMPLETED",
+        "TURN_COMPLETED"
+      ]
+    },
+    {
+      "name": "Two simulated seats, idempotent assignment, history and subsequent same-seat reply",
+      "sessionId": "s_fb6eecfd048b",
+      "agent": "human_support_1",
+      "secondAgent": "human_support_2"
+    },
+    {
+      "name": "Read-only permission and closed session cannot reactivate or transfer",
+      "passed": true
+    }
+  ],
+  "passed": true
+}

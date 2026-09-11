@@ -79,15 +79,15 @@ public class AgentDefinitionService {
 
     @Transactional
     public AgentDetailResponse create(CreateAgentRequest req, String updatedBy) {
-        if (req == null || req.code() == null || req.code().isBlank()) {
-            throw new IllegalArgumentException("code is required");
-        }
-        if (agentRepo.existsByCode(req.code())) {
+        if (req == null) throw new IllegalArgumentException("body is required");
+        if ((req.name() == null || req.name().isBlank()) && (req.definition() == null || req.definition().name() == null || req.definition().name().isBlank())) throw new IllegalArgumentException("name is required");
+        String generatedCode = req.code() == null || req.code().isBlank() ? "agent_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16) : req.code().trim();
+        if (agentRepo.existsByCode(generatedCode)) {
             throw new IllegalStateException("agent code already exists: " + req.code());
         }
         String type = req.type() != null ? req.type() : "WORKER";
-        AgentDefinition def = req.definition() != null ? req.definition() : defaultDefinition(req.code(), req.name(), type, req.description());
-        def = withIdentity(def, req.code(), req.name() != null ? req.name() : req.code(), type,
+        AgentDefinition def = req.definition() != null ? req.definition() : defaultDefinition(generatedCode, req.name(), type, req.description());
+        def = withIdentity(def, generatedCode, req.name() != null ? req.name().trim() : def.name(), type,
                 req.description() != null ? req.description() : def.description());
 
         AgtAgent agent = new AgtAgent();
@@ -97,10 +97,11 @@ public class AgentDefinitionService {
         agent.setDescription(def.description());
         agent.setType(def.type());
         agent.setStatus("DRAFT");
-        agent.setEnabled(true);
+        agent.setEnabled(false);
         agent.setPublishedVersion(null);
         agent.setDraftRevision(0);
         agent.setSortOrder(def.ui() != null && def.ui().sortOrder() != null ? def.ui().sortOrder() : 100);
+        validateDraft(def);
         agent.setDraftJson(writeDefinition(def));
         agent.setCreatedAt(Instant.now());
         agent.setUpdatedAt(Instant.now());
@@ -111,7 +112,7 @@ public class AgentDefinitionService {
 
     @Transactional
     public AgentDetailResponse update(String code, UpdateAgentRequest req, String updatedBy) {
-        AgtAgent agent = require(code);
+        AgtAgent agent = agentRepo.findForUpdateByCode(code).orElseThrow(() -> new IllegalArgumentException("agent not found: " + code));
         if (req == null) throw new IllegalArgumentException("body is required");
         if (req.draftRevision() != null && req.draftRevision() != agent.getDraftRevision()) {
             throw new IllegalStateException("draftRevision conflict, expected " + agent.getDraftRevision());
@@ -120,13 +121,15 @@ public class AgentDefinitionService {
         AgentDefinition current = readDefinition(agent.getDraftJson());
         AgentDefinition incoming = req.definition() != null ? req.definition() : current;
         String name = req.name() != null ? req.name() : (incoming.name() != null ? incoming.name() : agent.getName());
+        name = name.trim();
         String description = req.description() != null ? req.description() : incoming.description();
         incoming = withIdentity(incoming, code, name, agent.getType(), description);
 
-        if (req.enabled() != null) agent.setEnabled(req.enabled());
+        if (req.enabled() != null && req.enabled() != agent.isEnabled()) throw new IllegalArgumentException("use enable/disable endpoint to change runtime state");
         if (req.sortOrder() != null) agent.setSortOrder(req.sortOrder());
         if (req.remark() != null) agent.setRemark(req.remark());
 
+        validateDraft(incoming);
         agent.setName(name);
         agent.setDescription(description);
         agent.setDraftJson(writeDefinition(incoming));
@@ -135,13 +138,6 @@ public class AgentDefinitionService {
         agent.setUpdatedBy(updatedBy != null ? updatedBy : "admin");
         agentRepo.save(agent);
 
-        if (!agent.isEnabled()) {
-            registry.remove(code);
-        } else if (agent.getPublishedVersion() != null && "PUBLISHED".equals(agent.getStatus())) {
-            versionRepo.findByAgentCodeAndVersion(code, agent.getPublishedVersion()).ifPresent(v ->
-                    registry.replace(code, new com.demo.cs.agent.runtime.PublishedAgent(
-                            code, v.getVersion(), readDefinition(v.getSnapshotJson()))));
-        }
         return get(code);
     }
 
@@ -155,6 +151,11 @@ public class AgentDefinitionService {
     public ValidateResponse validateDefinition(AgentDefinition def) {
         var result = validator.validate(def);
         return new ValidateResponse(result.ok(), result.errors(), result.warnings());
+    }
+
+    private void validateDraft(AgentDefinition def) {
+        var result = validator.validateDraft(def);
+        if (!result.ok()) throw new AgentValidationException("agent validation failed", result.errors(), result.warnings());
     }
 
     public AgtAgent require(String code) {
@@ -191,9 +192,9 @@ public class AgentDefinitionService {
     private AgentDefinition withIdentity(AgentDefinition def, String code, String name, String type, String description) {
         return new AgentDefinition(
                 code, name, description, type,
-                def.modelConfig(), def.prompts(), def.outputSchema(), def.tools(),
+                def.modelConfig(), def.prompts(), def.outputSchema(), def.tools(), def.skills(),
                 def.mcp(), def.capabilities(), def.children(), def.routing(),
-                def.policies(), def.memory(), def.ui()
+                def.policies(), def.memory(), def.ui(), def.skillVersions()
         );
     }
 
@@ -207,11 +208,12 @@ public class AgentDefinitionService {
                 new AgentDefinition.Prompts("You are a helpful agent.", "{{text}}", "TEXT"),
                 null,
                 List.of(),
+                List.of(),
                 new AgentDefinition.McpConfig(false, List.of(), List.of()),
                 new AgentDefinition.Capabilities(false),
                 List.of(),
                 null,
-                new AgentDefinition.Policies(!"SUPERVISOR".equals(type), List.of(), 3, "vision".equals(code) ? 1 : 0),
+                new AgentDefinition.Policies(false, List.of(), 3, "SUPERVISOR".equals(type) ? 1 : 0),
                 new AgentDefinition.Memory(true, null, true),
                 new AgentDefinition.UiConfig(code, List.of(), 100)
         );

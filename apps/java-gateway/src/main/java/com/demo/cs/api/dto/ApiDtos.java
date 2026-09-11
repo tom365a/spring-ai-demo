@@ -56,7 +56,8 @@ public final class ApiDtos {
             Boolean confirm,
             Map<String, Object> confirmPayload,
             String locale,
-            ChatOptions options
+            ChatOptions options,
+            String supervisorCode
     ) {}
 
     public record ChatResponse(
@@ -70,8 +71,11 @@ public final class ApiDtos {
             List<ToolCallRecord> toolCalls,
             boolean confirmRequired,
             Map<String, Object> confirmationPayload,
-            String mode
-    ) {}
+            String mode,
+            Map<String,Object> diagnostics
+    ) {
+        public ChatResponse(String sessionId,String answer,String intent,String agentName,Double confidence,String reason,List<Citation> citations,List<ToolCallRecord> toolCalls,boolean confirmRequired,Map<String,Object> confirmationPayload,String mode) {this(sessionId,answer,intent,agentName,confidence,reason,citations,toolCalls,confirmRequired,confirmationPayload,mode,Map.of());}
+    }
 
     public record AttachmentResponse(
             String id,

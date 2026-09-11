@@ -91,6 +91,10 @@
         method: "PUT",
         body,
       }),
+    enable: (code) => api("/api/v1/admin/agents/"+encodeURIComponent(code)+"/enable", {method:"POST"}),
+    disable: (code) => api("/api/v1/admin/agents/"+encodeURIComponent(code)+"/disable", {method:"POST"}),
+    runtime: () => api("/api/v1/agents/runtime"),
+    catalogSkills: () => api("/api/v1/admin/catalog/skills"),
     validate: (code) =>
       api("/api/v1/admin/agents/" + encodeURIComponent(code) + "/validate", {
         method: "POST",
@@ -125,6 +129,15 @@
       api("/api/v1/admin/catalog/mcp-servers/" + encodeURIComponent(id) + "/refresh", {
         method: "POST",
       }),
+    resources: (kind) => api('/api/v1/admin/resources?kind='+encodeURIComponent(kind)),
+    resource: (id) => api('/api/v1/admin/resources/'+encodeURIComponent(id)),
+    saveResource: (id,body) => api('/api/v1/admin/resources'+(id?'/'+encodeURIComponent(id):''),{method:id?'PUT':'POST',body}),
+    resourceAction: (id,action,body={}) => api('/api/v1/admin/resources/'+encodeURIComponent(id)+'/'+action,{method:'POST',body}),
+    resourceImpact: (id,action,version) => api('/api/v1/admin/resources/'+encodeURIComponent(id)+'/impact?action='+encodeURIComponent(action)+(version!=null?'&version='+version:'')),
+    resourceVersions: (id) => api('/api/v1/admin/resources/'+encodeURIComponent(id)+'/versions'),
+    resourceReferences: (id) => api('/api/v1/admin/resources/'+encodeURIComponent(id)+'/references'),
+    deleteResource: (id) => api('/api/v1/admin/resources/'+encodeURIComponent(id),{method:'DELETE'}),
+    confirmAction: (id,sessionId,confirm) => api('/api/v1/confirmations/'+encodeURIComponent(id),{method:'POST',body:{sessionId,confirm}}),
     debugConfig: () => api("/api/v1/debug/config"),
   };
 })(window);

@@ -22,6 +22,7 @@ public class CsToolInvocation {
     @Column(length = 32)
     private String source;
     private Long latencyMs;
+    private Boolean success;
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -38,6 +39,8 @@ public class CsToolInvocation {
     public String getSource() { return source; }
     public void setSource(String source) { this.source = source; }
     public Long getLatencyMs() { return latencyMs; }
+    public Boolean getSuccess() { return success; }
+    public void setSuccess(Boolean success) { this.success=success; }
     public void setLatencyMs(Long latencyMs) { this.latencyMs = latencyMs; }
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

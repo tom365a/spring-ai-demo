@@ -53,6 +53,8 @@ public class AgentOrchestrator {
     private final AppProperties props;
     private final DefinitionRegistry definitionRegistry;
     private final ConfigurableAgentInvoker configurableInvoker;
+    private final com.demo.cs.application.resources.ManagedAgentRuntime managedRuntime;
+    private final com.demo.cs.application.support.HumanSupportService humanSupport;
 
     public AgentOrchestrator(
             SessionService sessionService,
@@ -65,7 +67,9 @@ public class AgentOrchestrator {
             List<SubAgent> subAgents,
             AppProperties props,
             DefinitionRegistry definitionRegistry,
-            ConfigurableAgentInvoker configurableInvoker
+            ConfigurableAgentInvoker configurableInvoker,
+            com.demo.cs.application.resources.ManagedAgentRuntime managedRuntime,
+            com.demo.cs.application.support.HumanSupportService humanSupport
     ) {
         this.sessionService = sessionService;
         this.attachmentService = attachmentService;
@@ -77,6 +81,8 @@ public class AgentOrchestrator {
         this.props = props;
         this.definitionRegistry = definitionRegistry;
         this.configurableInvoker = configurableInvoker;
+        this.managedRuntime = managedRuntime;
+        this.humanSupport = humanSupport;
         this.agents = new LinkedHashMap<>();
         for (SubAgent agent : subAgents) {
             this.agents.put(agent.name(), agent);
@@ -115,6 +121,22 @@ public class AgentOrchestrator {
     }
 
     private TurnOutcome executeTurn(ChatRequest request, Consumer<Map<String, Object>> eventSink) {
+        if(humanSupport.assigned(request.sessionId())) {
+            TurnOutcome outcome=humanSupport.chat(request);emitFinal(eventSink,outcome);return outcome;
+        }
+        if (props.agentConfig().enabled()) {
+            TurnOutcome outcome;
+            try {outcome=managedRuntime.chat(request,eventSink);}
+            catch(SecurityException e){throw e;}
+            catch(RuntimeException e){outcome=humanSupport.unavailable(request);}
+            emitFinal(eventSink,outcome);
+            return outcome;
+        }
+        String supervisorCode = request.supervisorCode() == null || request.supervisorCode().isBlank() ? "supervisor" : request.supervisorCode();
+        boolean configEnabled = props.agentConfig().enabled();
+        Optional<PublishedAgent> publishedSupervisor = configEnabled ? definitionRegistry.get(supervisorCode) : Optional.empty();
+        if (configEnabled && (publishedSupervisor.isEmpty() || !"SUPERVISOR".equals(publishedSupervisor.get().definition().type()))) throw new IllegalArgumentException("主Agent不存在或未启用: " + supervisorCode);
+        if (!configEnabled && request.supervisorCode() != null && !request.supervisorCode().isBlank()) throw new IllegalStateException("配置运行模式已关闭");
         String userId = request.userId() != null ? request.userId() : "u_001";
         CsSession session = resolveSession(request, userId);
         if ("closed".equals(session.getStatus())) {
@@ -132,7 +154,7 @@ public class AgentOrchestrator {
 
         boolean enableMcp = request.options() == null || request.options().mcpEnabled();
         Map<String, Object> storedPayload = sessionService.getConfirmationPayload(session);
-        Map<String, Object> confirmPayload = request.confirmPayload() != null ? request.confirmPayload() : storedPayload;
+        Map<String, Object> confirmPayload = storedPayload;
 
         // Confirm resume short-circuit
         if ("pending_confirm".equals(session.getStatus())) {
@@ -164,10 +186,6 @@ public class AgentOrchestrator {
         List<Map<String, Object>> recent = sessionService.recentMessages(session.getId());
         boolean hasAttachments = !attachments.isEmpty();
 
-        boolean configEnabled = props.agentConfig().enabled();
-        Optional<PublishedAgent> publishedSupervisor = configEnabled
-                ? definitionRegistry.get("supervisor")
-                : Optional.empty();
 
         RouteDecision route;
         boolean needsClarify;
@@ -198,10 +216,10 @@ public class AgentOrchestrator {
                     ? route.clarifyQuestion()
                     : "请问您想咨询订单、售后政策，还是需要其他帮助？";
             TurnOutcome outcome = new TurnOutcome(
-                    session.getId(), clarify, route.intent(), "supervisor",
+                    session.getId(), clarify, route.intent(), supervisorCode,
                     route.confidence(), route.reason(), List.of(), List.of(), false, null
             );
-            sessionService.updateRouting(session.getId(), route.intent(), "supervisor");
+            sessionService.updateRouting(session.getId(), route.intent(), supervisorCode);
             persistAssistant(session.getId(), outcome);
             emitFinal(eventSink, outcome);
             refreshSummary(session.getId());
@@ -210,7 +228,7 @@ public class AgentOrchestrator {
 
         // Safety: attachments → vision unless explicitly unrelated
         String targetAgent = route.targetAgent();
-        if (hasAttachments && !"multimodal".equals(route.intent()) && !"vision".equals(targetAgent)) {
+        if (!configEnabled && hasAttachments && !"multimodal".equals(route.intent()) && !"vision".equals(targetAgent)) {
             targetAgent = "vision";
             route = new RouteDecision("multimodal", route.confidence(), "vision",
                     "orchestrator: attachments present", route.slots(), false, null);
@@ -219,7 +237,7 @@ public class AgentOrchestrator {
         SubAgentResult result = dispatch(session, userId, text, recent, attachments, route, enableMcp, eventSink);
 
         // Vision secondary route (once)
-        if ("vision".equals(result.agentName()) && result.suggestedIntent() != null
+        if (!configEnabled && "vision".equals(result.agentName()) && result.suggestedIntent() != null
                 && List.of("order", "ticket", "knowledge").contains(result.suggestedIntent())) {
             Slots merged = mergeSlots(route.slots(), result.suggestedSlots());
             String enrichedText = text;
@@ -284,8 +302,6 @@ public class AgentOrchestrator {
         try {
             if (published.isPresent()) {
                 result = configurableInvoker.handle(published.get(), req);
-            } else if (props.agentConfig().fallbackToLegacy() && agents.containsKey(agentName)) {
-                result = agents.get(agentName).handle(req);
             } else if (!configEnabled && agents.containsKey(agentName)) {
                 result = agents.get(agentName).handle(req);
             } else {
@@ -311,6 +327,12 @@ public class AgentOrchestrator {
     ) {
         if (payload == null) {
             throw new IllegalStateException("no confirmation payload");
+        }
+        if (props.agentConfig().enabled()) {
+            String code=String.valueOf(payload.getOrDefault("agentName",""));
+            var source=definitionRegistry.get(code).orElseThrow(() -> new IllegalStateException("待确认操作的Agent已停用"));
+            String requestedAction=String.valueOf(payload.getOrDefault("action",""));
+            if (!configurableInvoker.allowedTools(source.definition()).contains(requestedAction)) throw new IllegalStateException("Agent已不允许执行该工具");
         }
         emit(eventSink, "agent", Map.of("agentName", "confirm_executor"));
         String action = String.valueOf(payload.getOrDefault("action", ""));
@@ -462,7 +484,7 @@ public class AgentOrchestrator {
                 outcome.toolCalls(),
                 outcome.confirmRequired(),
                 outcome.confirmationPayload(),
-                TurnOutcome.MODE
+                TurnOutcome.MODE, outcome.diagnostics()
         );
     }
 

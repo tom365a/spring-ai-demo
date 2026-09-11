@@ -10,7 +10,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import org.springframework.http.CacheControl;
+
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -36,6 +39,17 @@ public class WebConfig implements WebMvcConfigurer {
         } catch (Exception ignored) {
         }
         registry.addResourceHandler("/files/**").addResourceLocations(upload.toUri().toString());
+
+        // Font files carry a content hash in their name, so they are safe to cache indefinitely.
+        registry.addResourceHandler("/fonts/noto-sans-sc/**")
+                .addResourceLocations("classpath:/static/fonts/noto-sans-sc/")
+                .setCacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic().immutable());
+
+        // Markup, styles and scripts have stable names: force revalidation so a redeploy
+        // is never masked by a stale copy in the browser.
+        registry.addResourceHandler("/*.html", "/*.css", "/js/**", "/fonts/*.css")
+                .addResourceLocations("classpath:/static/", "classpath:/static/js/", "classpath:/static/fonts/")
+                .setCacheControl(CacheControl.noCache().mustRevalidate());
     }
 
     @Bean

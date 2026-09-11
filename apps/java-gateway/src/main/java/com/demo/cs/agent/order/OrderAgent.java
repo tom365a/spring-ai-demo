@@ -48,7 +48,7 @@ public class OrderAgent implements SubAgent {
             payload.put("userId", request.userId());
             payload.put("reason", "用户申请取消");
             payload.put("agentName", name());
-            String answer = "您申请取消订单 " + orderId + "。此操作不可撤销，请确认是否继续？回复「确认」即可执行取消。";
+            String answer = "您申请取消订单 " + orderId + "。此操作不可撤销，请在下方确认卡片点「确认执行」继续。";
             return SubAgentResult.confirm(name(), answer, payload);
         }
 

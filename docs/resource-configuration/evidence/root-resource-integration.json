@@ -1,0 +1,385 @@
+{
+  "at": "2026-09-11T05:38:44.936Z",
+  "prefix": "rc_mtwizxhk",
+  "checks": [
+    {
+      "name": "HTTP read through selected Agent/model and runtime gateway",
+      "result": {
+        "answer": "RESOURCE_TOOL_RESULT {\"receipt\":\"HTTP_RECEIPT_8f58ab6ee75c\",\"method\":\"GET\",\"path\":\"/http/ping\",\"query\":{\"query\":\"read-proof\"},\"body\":{},\"writes\":0}",
+        "agentCode": "rc_mtwizxhk_worker",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [
+          {
+            "name": "rc_mtwizxhk_read",
+            "arguments": {
+              "query": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 5,
+            "success": true,
+            "resourceId": "e9cf669b-b0c5-41a9-b0df-39a9a597940b",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "promptsRendered": {},
+        "latencyMs": 40,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "7648307e-0348-46b0-a246-223376d0c427",
+          "models": [
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 1,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            },
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 1,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            }
+          ],
+          "remainingMs": 119983,
+          "transfers": 0,
+          "agents": {
+            "rc_mtwizxhk_worker": {
+              "toolRounds": 1,
+              "maxToolRounds": 3,
+              "remainingMs": 119983
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "HTTP write waits, server parameters authoritative, duplicate denied",
+      "result": {
+        "sessionId": "s_9234bb3b340b",
+        "answer": "RESOURCE_TOOL_RESULT {\"receipt\":\"HTTP_RECEIPT_8f58ab6ee75c\",\"method\":\"POST\",\"path\":\"/http/write\",\"query\":{},\"body\":{\"query\":\"write-proof\"},\"writes\":1}",
+        "intent": "trial",
+        "agentName": "rc_mtwizxhk_worker",
+        "confidence": 1,
+        "reason": "资源快照执行",
+        "citations": [],
+        "toolCalls": [
+          {
+            "name": "rc_mtwizxhk_write",
+            "arguments": {
+              "query": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 4,
+            "success": true,
+            "resourceId": "a01d4bfe-d0c2-4b4b-8c7f-e3b6d1520c89",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "mode": "spring-ai-multi-agent",
+        "diagnostics": {
+          "taskId": "038ec7a6-1ddb-48fa-9768-6337493e4deb",
+          "models": [
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 1,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            },
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 1,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            }
+          ],
+          "remainingMs": 119984,
+          "transfers": 0,
+          "agents": {
+            "rc_mtwizxhk_worker": {
+              "toolRounds": 1,
+              "maxToolRounds": 3,
+              "remainingMs": 119984
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Cancel causes zero write calls",
+      "passed": true
+    },
+    {
+      "name": "Two standard MCP services with same native name remain distinct",
+      "tools": [
+        {
+          "code": "mcp_598978b1173d6b751dd43bb41c2b485a",
+          "config": {
+            "source": "MCP",
+            "serviceId": "9884920a-c2df-42ef-8b22-1225880d8797",
+            "nativeName": "lookup",
+            "sideEffect": "WRITE",
+            "requireConfirm": true,
+            "timeoutSeconds": 30,
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        {
+          "code": "mcp_b959c5a2965f44df7f73ed91ff0bf45d",
+          "config": {
+            "source": "MCP",
+            "serviceId": "e1a67329-2794-4753-aa04-ed8e6d84631f",
+            "nativeName": "lookup",
+            "sideEffect": "WRITE",
+            "requireConfirm": true,
+            "timeoutSeconds": 30,
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "query"
+              ],
+              "additionalProperties": false
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "MCP a executes exact service after confirmation",
+      "result": {
+        "sessionId": "s_c39f7b1395ef",
+        "answer": "RESOURCE_TOOL_RESULT {\"content\":[{\"type\":\"text\",\"text\":\"{\\\"service\\\":\\\"resource_fixture_a\\\",\\\"query\\\":\\\"mcp-proof\\\",\\\"receipt\\\":\\\"HTTP_RECEIPT_8f58ab6ee75c\\\"}\"}]}",
+        "intent": "trial",
+        "agentName": "rc_mtwizxhk_worker",
+        "confidence": 1,
+        "reason": "资源快照执行",
+        "citations": [],
+        "toolCalls": [
+          {
+            "name": "mcp_598978b1173d6b751dd43bb41c2b485a",
+            "arguments": {
+              "query": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "MCP",
+            "latencyMs": 14,
+            "success": true,
+            "resourceId": "9a4820b8-d9e0-45ca-8f00-58aaaba996c2",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": "lookup"
+          }
+        ],
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "mode": "spring-ai-multi-agent",
+        "diagnostics": {
+          "taskId": "97730521-8f18-4713-9f26-3c5ad40fc094",
+          "models": [
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 2,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            },
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 2,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            }
+          ],
+          "remainingMs": 119975,
+          "transfers": 0,
+          "agents": {
+            "rc_mtwizxhk_worker": {
+              "toolRounds": 1,
+              "maxToolRounds": 3,
+              "remainingMs": 119975
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "MCP b executes exact service after confirmation",
+      "result": {
+        "sessionId": "s_a6b4e08774eb",
+        "answer": "RESOURCE_TOOL_RESULT {\"content\":[{\"type\":\"text\",\"text\":\"{\\\"service\\\":\\\"resource_fixture_b\\\",\\\"query\\\":\\\"mcp-proof\\\",\\\"receipt\\\":\\\"HTTP_RECEIPT_8f58ab6ee75c\\\"}\"}]}",
+        "intent": "trial",
+        "agentName": "rc_mtwizxhk_worker",
+        "confidence": 1,
+        "reason": "资源快照执行",
+        "citations": [],
+        "toolCalls": [
+          {
+            "name": "mcp_b959c5a2965f44df7f73ed91ff0bf45d",
+            "arguments": {
+              "query": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "MCP",
+            "latencyMs": 15,
+            "success": true,
+            "resourceId": "cce0d08a-1120-4979-a325-1d1677ef4b11",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": "lookup"
+          }
+        ],
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "mode": "spring-ai-multi-agent",
+        "diagnostics": {
+          "taskId": "e6ea2d25-7b47-4a1e-90b5-3a90be4b1d48",
+          "models": [
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 2,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            },
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 2,
+              "resourceId": "3bbb3a31-63e2-4f95-b05e-f63e504bba12",
+              "resourceVersion": 2,
+              "provider": "KIMI",
+              "model": "kimi-k3",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            }
+          ],
+          "remainingMs": 119974,
+          "transfers": 0,
+          "agents": {
+            "rc_mtwizxhk_worker": {
+              "toolRounds": 1,
+              "maxToolRounds": 3,
+              "remainingMs": 119974
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Agent dropdown resource selection actually switches provider and model",
+      "result": {
+        "answer": "RESOURCE_MODEL gpt-4o-mini | model-selection-proof",
+        "agentCode": "rc_mtwizxhk_worker",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [],
+        "promptsRendered": {},
+        "latencyMs": 18,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "22cb1d77-6b1d-487d-87b5-e2fe11b4732f",
+          "models": [
+            {
+              "agentCode": "rc_mtwizxhk_worker",
+              "agentVersion": 3,
+              "resourceId": "723530d6-fbcf-4c05-b0c1-51a94181732f",
+              "resourceVersion": 2,
+              "provider": "OPENAI",
+              "model": "gpt-4o-mini",
+              "usage": {
+                "promptTokens": 2,
+                "completionTokens": 2,
+                "totalTokens": 4
+              }
+            }
+          ],
+          "remainingMs": 119995,
+          "transfers": 0,
+          "agents": {
+            "rc_mtwizxhk_worker": {
+              "toolRounds": 0,
+              "maxToolRounds": 3,
+              "remainingMs": 119995
+            }
+          }
+        }
+      }
+    }
+  ],
+  "passed": true
+}

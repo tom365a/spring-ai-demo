@@ -30,6 +30,24 @@ public class CsSession {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
 
+    private Instant lastInputAt;
+    private Instant endedAt;
+    public Instant getEndedAt(){return endedAt;}
+    public void setEndedAt(Instant value){endedAt=value;}
+    @Column(length=32) private String resolutionStatus;
+    @Lob @Column(columnDefinition="TEXT") private String assessmentNote;
+    private Instant assessedAt;
+    @Column(length=32) private String closeReason;
+    public Instant getLastInputAt(){return lastInputAt==null?createdAt:lastInputAt;}
+    public void setLastInputAt(Instant value){lastInputAt=value;}
+    public String getResolutionStatus(){return resolutionStatus==null?"PENDING":resolutionStatus;}
+    public void setResolutionStatus(String value){resolutionStatus=value;}
+    public String getAssessmentNote(){return assessmentNote;}
+    public void setAssessmentNote(String value){assessmentNote=value;}
+    public Instant getAssessedAt(){return assessedAt;}
+    public void setAssessedAt(Instant value){assessedAt=value;}
+    public String getCloseReason(){return closeReason;}
+    public void setCloseReason(String value){closeReason=value;}
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getUserId() { return userId; }

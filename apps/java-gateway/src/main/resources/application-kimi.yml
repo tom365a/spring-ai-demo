@@ -1,0 +1,37 @@
+spring:
+  ai:
+    model:
+      chat: none
+      embedding: ${EMBEDDING_PROVIDER:none}
+    openai:
+      embedding:
+        api-key: ${OPENAI_EMBEDDING_API_KEY:${OPENAI_API_KEY:sk-not-configured}}
+        base-url: ${OPENAI_EMBEDDING_BASE_URL:${OPENAI_BASE_URL:https://api.openai.com}}
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL:text-embedding-3-small}
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
+
+app:
+  llm:
+    provider: kimi
+    kimi:
+      api-key: ${KIMI_API_KEY:}
+      base-url: ${KIMI_BASE_URL:https://api.moonshot.cn}
+      model: ${KIMI_MODEL:kimi-k3}
+      reasoning-effort: ${KIMI_REASONING_EFFORT:low}
+      max-completion-tokens: ${KIMI_MAX_COMPLETION_TOKENS:4096}
+      max-tool-rounds: ${KIMI_MAX_TOOL_ROUNDS:6}
+      timeout-seconds: ${KIMI_TIMEOUT_SECONDS:90}
+  vector:
+    # 本地 ONNX 中文嵌入（bge-small-zh-v1.5），真实语义向量，无外部嵌入调用。
+    # 需要退回关键词检索时设 APP_VECTOR_BACKEND=lexical。
+    backend: ${APP_VECTOR_BACKEND:simple}
+  rag:
+    score-threshold: ${RAG_SCORE_THRESHOLD:0.15}
+
+logging:
+  level:
+    org.springframework.ai: INFO
+    java.net.http: WARN

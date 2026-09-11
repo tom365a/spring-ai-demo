@@ -1,0 +1,149 @@
+{
+  "at": "2026-09-11T01:20:00+08:00",
+  "scope": "视觉语言与字体改造，方向 A「控制台蓝」。信息架构、字段、按钮语义、确认与发布流程未改动。",
+  "environment": "隔离后端 http://localhost:18080，独立 H2，自有回环夹具 18091（模型/HTTP/MCP），合成凭证。未接触 8080 用户应用，未读取根 .env。",
+  "font": {
+    "family": "Noto Sans SC（思源黑体）",
+    "license": "SIL Open Font License 1.1",
+    "licenseEvidence": "字体文件 name 表 nameID 14 = http://scripts.sil.org/OFL；许可证全文随包 fonts/noto-sans-sc/OFL.txt (4388 bytes)",
+    "variable": {
+      "axis": "wght",
+      "min": 100,
+      "max": 900
+    },
+    "selfHosted": true,
+    "externalFontRequestsAtRuntime": 0,
+    "chunks": 101,
+    "diskBytes": 4519000,
+    "diskMB": 4.31,
+    "cssRawKB": 108.2,
+    "cssGzipKB": 30.4,
+    "perPageChunksLoaded": "15–16",
+    "perPageWoff2KB": 861,
+    "chunkLargestKB": 75,
+    "chunkMedianKB": 47,
+    "actuallyRendering": {
+      "computedFontFamily": "\"Noto Sans SC\", system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      "loadedFaceFamilies": [
+        "Noto Sans SC"
+      ],
+      "renderWidthNotoPx": 387.81,
+      "renderWidthMicrosoftYaHeiPx": 395.98,
+      "note": "同一字符串在两种字体下渲染宽度不同，证明确实由 Noto Sans SC 渲染，而非静默回退"
+    }
+  },
+  "caching": {
+    "htmlCssJs": "no-cache, must-revalidate",
+    "fontWoff2": "max-age=31536000, public, immutable",
+    "gzip": {
+      "appCssJsRawKB": 100.4,
+      "appCssJsGzipKB": 30.3,
+      "appCssJsRatio": "3.3x",
+      "fontCssRawKB": 108.2,
+      "fontCssGzipKB": 30.4,
+      "fontCssRatio": "3.6x",
+      "method": "对实际文件逐个 gzip (level 6, Tomcat 默认) 实算",
+      "correction": "先前记录的「99 KB -> 4 KB」有误：那 4 KB 是带缓存访问时 304 Not Modified 的响应头体积，不是压缩正文（同次测量中字体 transferSize 亦为 0）。"
+    }
+  },
+  "contrast": {
+    "method": "页面内脚本按 WCAG 相对亮度公式逐个文本节点实算前景/实际背景比值；小字阈值 4.5:1，大字 3:1",
+    "failuresDesktop": 0,
+    "failuresNarrow390": 0,
+    "coverage": [
+      "Agents",
+      "模型",
+      "工具",
+      "MCP",
+      "技能",
+      "各页配置详情弹窗",
+      "客服对话页"
+    ],
+    "keyValues": {
+      "text-1 #1d2129": "16.1:1",
+      "text-2 #4e5969": "7.1:1",
+      "text-3 #5f6875": "5.6:1",
+      "brand #0b62d6 白底": "5.6:1",
+      "brand 按钮白字": "5.6:1",
+      "success #087a20 on #e8ffea": "5.2:1",
+      "warning #a85700 on #fff7e8": "4.9:1",
+      "danger #c92a2a on #ffece8": "4.8:1",
+      "info #0a5cab on #e8f7ff": "6.1:1"
+    }
+  },
+  "layout": {
+    "squeezedControls": 0,
+    "pageLevelHorizontalOverflow": 0,
+    "narrowViewport": "390x844",
+    "wideContentBehaviour": "Agent 列表表格在自身 overflow:auto 容器内横向滚动，页面不横向滚动"
+  },
+  "defectsFoundAndFixed": [
+    {
+      "id": "UI-01",
+      "problem": "390px 下侧栏不折叠、内容溢出",
+      "cause": ".shell > main (0,1,1) 特指度高于媒体查询里的 .content (0,1,0)",
+      "fix": "媒体查询改用 .shell > .content (0,2,0)"
+    },
+    {
+      "id": "UI-02",
+      "problem": "内容区被宽表格撑到 988px，页面横向滚动",
+      "cause": ".content 隐式栅格列为 auto，按 max-content 定宽",
+      "fix": "grid-template-columns: minmax(0, 1fr)"
+    },
+    {
+      "id": "UI-03",
+      "problem": "改版后浏览器可能仍显示旧界面",
+      "cause": "静态资源无缓存头",
+      "fix": "HTML/CSS/JS no-cache must-revalidate；内容哈希命名的字体 immutable 一年"
+    },
+    {
+      "id": "UI-04",
+      "problem": "侧栏底部 APP_AGENT_CONFIG_ENABLED 长 token 溢出侧栏",
+      "cause": "无断词规则",
+      "fix": "overflow-wrap: anywhere"
+    },
+    {
+      "id": "UI-05",
+      "problem": "文档与设计稿把 gzip 效果写成 99 KB -> 4 KB",
+      "cause": "用带缓存的 performance.transferSize 读数，实际测到的是 304 响应头",
+      "fix": "改为逐文件 gzip 实算：应用 CSS+JS 100.4 -> 30.3 KB (3.3x)"
+    }
+  ],
+  "regression": {
+    "javaSuite": {
+      "classes": 12,
+      "tests": 75,
+      "failures": 0
+    },
+    "qaResourceHttp": {
+      "checks": 22,
+      "passed": true
+    },
+    "legacyRegression": {
+      "checks": 8,
+      "passed": true
+    },
+    "rootIntegration": {
+      "checks": 7,
+      "passed": true
+    }
+  },
+  "browserFlow": {
+    "writeToolConfirmation": "浏览器实操：输入 → 出现确认卡片（操作/工具/参数/有效期四行 + 不可撤销提示）→ 点「确认执行」→ 返回「订单已取消」",
+    "confirmationFieldsRenderedFromApi": [
+      "summary",
+      "tool.code",
+      "tool.source",
+      "tool.version",
+      "tool.arguments 的键名",
+      "expiresAt"
+    ],
+    "argumentsMasked": "接口返回的参数值本身即 [已脱敏]，卡片只列参数名并注明服务端脱敏，未编造业务数据"
+  },
+  "notDone": [
+    "方向 B / C 的令牌未落盘",
+    "客服页顶部前端自检提示已弱化但未删除，去留待定",
+    "右侧运行详情面板仍为 JSON 原文",
+    "未部署到 8080 用户应用"
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "at": "2026-09-11T05:38:44.253Z",
+  "base": "http://127.0.0.1:18080",
+  "checks": [
+    {
+      "name": "legacy supervisor still routes to a seeded worker",
+      "passed": true,
+      "evidence": {
+        "sessionId": "s_b06a78f2ad80",
+        "agentName": "knowledge",
+        "intent": "resource_test",
+        "answer": "RESOURCE_MODEL kimi-k3 |  P1：支付成功未发货超时、账户安全\n- P2：破损少件、物流异常\n- P3：一般咨询、政策说明\n\n## 转人工\n当智能客服无法解决，或涉及大额退款（>1000 元）时，将转人工客服处理。\n"
+      }
+    },
+    {
+      "name": "legacy knowledge retrieval still returns citations from sample documents",
+      "passed": true,
+      "evidence": {
+        "documents": null,
+        "citations": [
+          "refund-policy",
+          "account-help",
+          "shipping-faq"
+        ]
+      }
+    },
+    {
+      "name": "legacy read tool query_order still executes without confirmation",
+      "passed": true,
+      "evidence": {
+        "agentName": "order",
+        "toolCalls": [
+          {
+            "name": "query_order",
+            "arguments": {
+              "orderId": "[已脱敏]",
+              "userId": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "BUILTIN",
+            "latencyMs": 6,
+            "success": true,
+            "resourceId": "78168927-59bf-4a5f-b8d8-e767258211c7",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "answer": "RESOURCE_TOOL_RESULT \"{\\\"order\\\":{\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"userId\\\":\\\"u_001\\\",\\\"status\\\":\\\"待发货\\\",\\\"amount\\\":299.00,\\\"items\\\":\\\"无线耳机 x1\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\",\\\"cancellable\\\":"
+      }
+    },
+    {
+      "name": "legacy write tool cancel_order still pauses for confirmation and then executes once",
+      "passed": true,
+      "evidence": {
+        "pendingId": "9e5e55ff-0546-4b41-899e-f9a2493f749f",
+        "toolCalls": [
+          {
+            "name": "cancel_order",
+            "arguments": {
+              "orderId": "[已脱敏]",
+              "userId": "[已脱敏]",
+              "reason": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "BUILTIN",
+            "latencyMs": 4,
+            "success": true,
+            "resourceId": "fbbec018-586c-4bf5-8309-de6d655491e4",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "replayDenied": true
+      }
+    },
+    {
+      "name": "legacy cancel choice leaves the write tool unexecuted",
+      "passed": true,
+      "evidence": {
+        "answer": "已取消该操作。",
+        "toolCalls": []
+      }
+    },
+    {
+      "name": "legacy ticket creation still works end to end",
+      "passed": true,
+      "evidence": {
+        "toolCalls": [
+          {
+            "name": "create_ticket",
+            "arguments": {
+              "userId": "[已脱敏]",
+              "category": "[已脱敏]",
+              "description": "[已脱敏]",
+              "priority": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "BUILTIN",
+            "latencyMs": 4,
+            "success": true,
+            "resourceId": "9f950aa3-f28d-4952-a81d-e15f840178f9",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "answer": "RESOURCE_TOOL_RESULT \"{\\\"ok\\\":true,\\\"ticketId\\\":\\\"TK202609115P4DK0\\\",\\\"message\\\":\\\"工单已创建\\\"}\""
+      }
+    },
+    {
+      "name": "legacy multi-turn history is still carried across turns in one session",
+      "passed": true,
+      "evidence": {
+        "sessionId": "s_1dfb3bac2d30",
+        "messageCount": 4,
+        "roles": [
+          "user",
+          "assistant",
+          "user",
+          "assistant"
+        ]
+      }
+    },
+    {
+      "name": "legacy debug config endpoint still reports the active runtime",
+      "passed": true,
+      "evidence": {
+        "mode": "spring-ai-multi-agent",
+        "mcpEnabled": false,
+        "ragTopK": 5,
+        "ragScoreThreshold": 0.15,
+        "routeConfidenceThreshold": 0.55,
+        "sessionWindowSize": 10,
+        "llmModel": "kimi-k3",
+        "llmProvider": "kimi",
+        "embeddingModel": "text-embedding-3-small",
+        "retrievalMode": "向量检索",
+        "vectorBackend": "simple",
+        "agentConfigEnabled": true,
+        "agentConfigFallbackToLegacy": false,
+        "agentConfigSeedOnStartup": true
+      }
+    }
+  ],
+  "failures": [],
+  "passed": true
+}

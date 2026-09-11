@@ -3,22 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agent 管理</title>
-  <link rel="stylesheet" href="/admin.css" />
+  <title>Agent 工作台 · 资源配置</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/fonts/noto-sans-sc.css" />
+  <link rel="stylesheet" href="/theme.css" />
+  <link rel="stylesheet" href="/admin.css" /><link rel="stylesheet" href="/resource.css" />
 </head>
 <body>
 <div class="shell">
-  <header class="topbar">
-    <div>
-      <h1 class="brand">Agent <span>管理</span></h1>
-      <p class="sub">可配置 Supervisor / 子 Agent · 发布 / 试运行</p>
-      <p class="hint" id="runtimeHint" style="margin-top:6px"></p>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-title">智能客服控制台</div>
+      <div class="sidebar-sub">Spring AI Multi-Agent</div>
     </div>
+
+    <nav class="nav">
+      <button type="button" data-view="agents" class="active">Agents</button>
+      <button type="button" data-view="models">模型</button>
+      <button type="button" data-view="tools">工具</button>
+      <button type="button" data-view="mcp">MCP</button>
+      <button type="button" data-view="skills">技能</button>
+      <button type="button" data-view="support">人工坐席</button>
+      <button type="button" data-view="monitor">监控日志</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <p class="hint" id="runtimeHint" style="margin:0"></p>
+    </div>
+  </aside>
+
+  <header class="topbar">
+    <p class="sub">管理资源 → 关联 Agent → 发布生效 → 试运行</p>
     <div class="meta">
       <div class="chip warn" id="runtimeChip">对话 Runtime <strong>…</strong></div>
       <label class="chip" style="display:flex;gap:6px;align-items:center">
         角色
-        <select id="roleSelect" style="width:auto;padding:2px 8px">
+        <select id="roleSelect" style="width:auto;height:22px;padding:0 4px;border:0;background:transparent">
           <option value="viewer">viewer</option>
           <option value="editor">editor</option>
           <option value="publisher">publisher</option>
@@ -28,13 +48,9 @@
     </div>
   </header>
 
-  <nav class="nav">
-    <button type="button" data-view="agents" class="active">Agents</button>
-    <button type="button" data-view="catalog">Catalog</button>
-    <button type="button" data-view="playground">Playground</button>
-  </nav>
+  <main class="content">
 
-  <!-- LIST -->
+  <section id="viewResources" class="panel hidden"></section><!-- LIST -->
   <section id="viewAgents" class="panel">
     <div class="toolbar">
       <input id="filterQ" type="search" placeholder="搜索 code / 名称" style="max-width:200px" />
@@ -72,9 +88,9 @@
     <div class="toolbar">
       <button type="button" class="secondary" id="btnBackList">← 列表</button>
       <h2 id="editorTitle" style="margin:0;font-size:1.05rem;flex:1"></h2>
-      <button type="button" id="btnSave" data-need="editor">保存 draft</button>
+      <button type="button" id="btnSave" data-need="editor">保存草稿</button>
       <button type="button" class="secondary" id="btnValidate" data-need="editor">校验</button>
-      <button type="button" id="btnPublish" data-need="publisher">发布</button>
+      <button type="button" id="btnPublish" data-need="publisher">启用</button>
       <button type="button" class="secondary" id="btnTrialJump">试运行</button>
     </div>
     <div class="summary-bar">
@@ -82,16 +98,16 @@
       <span class="chip">type <strong id="sumType">-</strong></span>
       <span class="chip">线上 <strong id="sumVer">-</strong></span>
       <span class="chip"><strong id="sumEnabled">-</strong></span>
-      <span id="dirtyDot" class="chip warn hidden"><span class="dot"></span> dirty</span>
+      <span id="dirtyDot" class="chip warn hidden"><span class="dot"></span> 有草稿变更</span>
     </div>
     <div class="tabs">
       <button type="button" data-tab="basic" class="active">基本信息</button>
-      <button type="button" data-tab="model">模型</button>
+      <button type="button" data-tab="model">模型与能力</button>
       <button type="button" data-tab="prompts">提示词</button>
       <button type="button" data-tab="tools">工具</button>
       <button type="button" data-tab="mcp">MCP</button>
       <button type="button" data-tab="children" id="tabChildrenBtn">子 Agent</button>
-      <button type="button" data-tab="policies">策略</button>
+      <button type="button" data-tab="policies">运行规则</button>
       <button type="button" data-tab="publish">发布</button>
     </div>
 
@@ -108,16 +124,9 @@
     </div>
 
     <div class="tab-panel" data-panel="model">
-      <div class="grid-2">
-        <label class="field">chatModel（空=全局默认）<input id="fModel" type="text" placeholder="gpt-4o-mini" /></label>
-        <label class="field">maxTokens<input id="fMaxTokens" type="number" /></label>
-      </div>
-      <label class="field">temperature <span id="fTempVal">0.2</span>
-        <input id="fTemp" type="range" min="0" max="1" step="0.05" />
-      </label>
-      <label class="check-row"><input id="fVision" type="checkbox" /> enableVision</label>
-    </div>
-
+<label class="field">使用模型<select id="fModel"></select></label><label class="check-row"><input id="fInheritModel" type="checkbox" checked disabled>继承模型资源默认参数</label><p id="effectiveModel" class="hint"></p>
+<div class="hidden"><input id="fMaxTokens" type="number"><input id="fTemp" type="range"><span id="fTempVal"></span><input id="fVision" type="checkbox"></div>
+<label class="check-row"><input id="fEnableRag" type="checkbox">启用知识检索（当前为本地关键词检索）</label><div id="capabilitySummary" class="result"></div></div>
     <div class="tab-panel" data-panel="prompts">
       <div class="chips" id="phChips"></div>
       <label class="field">systemPrompt<textarea id="fSystem" class="mono" rows="12"></textarea></label>
@@ -135,16 +144,16 @@
     </div>
 
     <div class="tab-panel" data-panel="tools">
-      <p class="hint">SUPERVISOR 不可勾选 WRITE 工具。勾选 WRITE 时建议加入确认策略。</p>
-      <div id="toolsBox"></div>
+      <p class="hint">主 Agent 不可使用写工具。写工具在实际执行前必须由用户确认。</p>
+      <div id="toolsBox"></div><h3>可用技能</h3><p class="hint">技能会注入指令，并自动合并说明中列出的工具或检索能力。</p><div id="skillsBox"></div>
     </div>
 
     <div class="tab-panel" data-panel="mcp">
-      <label class="check-row"><input id="fMcpEnabled" type="checkbox" /> mcp.enabled</label>
-      <p class="hint">endpoint 只读（Demo 锁死 seed）。</p>
-      <h4 class="hint">Servers</h4>
+      <label class="check-row"><input id="fMcpEnabled" type="checkbox" /> 启用 MCP 工具授权</label>
+      <p class="hint">先选择已启用服务，再逐项授权已发布工具。后续发现的新工具不会自动获得授权。</p>
+      <h4 class="hint">服务</h4>
       <div id="mcpServersBox"></div>
-      <h4 class="hint">tool allowlist</h4>
+      <h4 class="hint">精确工具授权</h4>
       <div id="mcpToolsBox"></div>
     </div>
 
@@ -157,20 +166,22 @@
 
     <div class="tab-panel" data-panel="policies">
       <div class="grid-2">
-        <label class="check-row"><input id="fAllowWrite" type="checkbox" /> allowWriteTools</label>
-        <label class="check-row"><input id="fEnableRag" type="checkbox" /> capabilities.enableRag</label>
+        <label class="check-row"><input id="fAllowWrite" type="checkbox" /> 允许修改业务数据（主 Agent 固定关闭）</label>
       </div>
       <div class="grid-2">
-        <label class="field">maxToolRounds<input id="fMaxRounds" type="number" /></label>
-        <label class="field">maxChildHops<input id="fMaxHops" type="number" /></label>
+        <label class="field">最多工具调用轮数（0 表示禁止工具）<input id="fMaxRounds" type="number" min="0" max="20" /></label>
+        <label class="field">最多子 Agent 转交（主 Agent 固定 1 次）<input id="fMaxHops" type="number" readonly /></label>
+        <label class="field">单工具超时（秒，1–300）<input id="fToolTimeout" type="number" min="1" max="300" /></label>
+        <label class="field">单任务总超时（秒，1–600）<input id="fTaskTimeout" type="number" min="1" max="600" /></label>
       </div>
-      <h4 class="hint">requireConfirmFor（WRITE）</h4>
+      <p class="hint">同一模型响应内的工具调用算一轮，每批最多 10 项；确认等待不计入活跃耗时，恢复后预算不重置。</p>
+      <h4 class="hint">需要用户确认的工具（写工具强制确认）</h4>
       <div id="confirmToolsBox"></div>
-      <h4 class="hint">memory</h4>
+      <h4 class="hint">会话记忆</h4>
       <div class="grid-3">
-        <label class="check-row"><input id="fInjectSummary" type="checkbox" /> injectSummary</label>
-        <label class="field">windowSize<input id="fWindow" type="number" placeholder="空=全局" /></label>
-        <label class="check-row"><input id="fInjectDesc" type="checkbox" /> injectDescriptionToSupervisor</label>
+        <label class="check-row"><input id="fInjectSummary" type="checkbox" /> 注入历史摘要</label>
+        <label class="field">最近公开对话轮数（0–50）<input id="fWindow" type="number" min="0" max="50" placeholder="默认 10 轮" /></label>
+        <label class="check-row"><input id="fInjectDesc" type="checkbox" /> 向主 Agent 提供职责简介</label>
       </div>
       <div id="tabRoutingBlock">
         <h4 class="hint">routing（SUPERVISOR）</h4>
@@ -193,29 +204,30 @@
 
   <!-- PLAYGROUND -->
   <section id="viewPlayground" class="panel hidden">
-    <p class="hint">single 直跑 definition，不依赖 Runtime flag；full_route 走 Orchestrator，仅 Config 模式吃配置化 Supervisor。</p>
+    <p class="hint">单 Agent 试运行可选择草稿；完整主子路由使用已发布配置。两者遵守统一模型、权限和执行预算。</p>
     <div class="grid-2">
-      <label class="field">agent
+      <label class="field">Agent
         <select id="pgCode"></select>
       </label>
-      <label class="field">mode
-        <select id="pgMode"><option value="single">single</option><option value="full_route">full_route</option></select>
+      <label class="field">试运行模式        <select id="pgMode"><option value="single">单 Agent</option><option value="full_route">完整主子路由</option></select>
       </label>
     </div>
     <div class="grid-2">
-      <label class="field">userId<input id="pgUser" type="text" value="trial_u_demo" /></label>
-      <label class="check-row" style="margin-top:22px"><input id="pgUseDraft" type="checkbox" checked /> useDraft</label>
+      <label class="field">测试用户标识<input id="pgUser" type="text" value="trial_u_demo" /></label>
+      <label class="check-row" style="margin-top:22px"><input id="pgUseDraft" type="checkbox" checked /> 使用草稿</label>
     </div>
-    <label class="field">text<textarea id="pgText" rows="3" placeholder="帮我查订单 ORD20260730001"></textarea></label>
-    <button type="button" id="btnPgRun" data-need="editor">运行 trial</button>
+    <label class="field">测试输入<textarea id="pgText" rows="3" placeholder="帮我查订单 ORD20260730001"></textarea></label>
+    <button type="button" id="btnPgRun" data-need="editor">运行试用</button>
     <p class="hint" id="pgMeta" style="margin-top:10px"></p>
+    <div id="pgConfirmation"></div>
+    <details><summary>实际模型与执行诊断</summary><pre id="pgDiagnostics"></pre></details>
     <div class="grid-2" style="margin-top:10px">
-      <div class="result"><div class="hint">answer</div><pre id="pgAnswer">-</pre></div>
-      <div class="result"><div class="hint">routeTrace</div><pre id="pgTrace">-</pre></div>
+      <div class="result"><div class="hint">回答</div><pre id="pgAnswer">-</pre></div>
+      <div class="result"><div class="hint">路由轨迹</div><pre id="pgTrace">-</pre></div>
     </div>
     <div class="grid-2" style="margin-top:10px">
-      <div class="result"><div class="hint">toolCalls</div><pre id="pgTools">-</pre></div>
-      <div class="result"><div class="hint">promptsRendered.system</div><pre id="pgPrompts">-</pre></div>
+      <div class="result"><div class="hint">真实工具调用</div><pre id="pgTools">-</pre></div>
+      <div class="result"><div class="hint">渲染后的提示词</div><pre id="pgPrompts">-</pre></div>
     </div>
   </section>
 
@@ -229,21 +241,28 @@
     <h3 style="margin:16px 0 10px;font-size:1rem">MCP Servers</h3>
     <div id="catalogMcp"></div>
   </section>
+
+  </main>
 </div>
 
 <div id="createModal" class="modal-mask hidden">
   <div class="modal">
     <h3>创建 Agent</h3>
-    <label class="field">code<input id="cCode" type="text" placeholder="invoice" /></label>
-    <label class="field">name<input id="cName" type="text" /></label>
-    <label class="field">type
-      <select id="cType"><option value="WORKER">WORKER</option><option value="SUPERVISOR">SUPERVISOR</option></select>
+    <label class="field">标识（可留空自动生成）<input id="cCode" type="text" placeholder="自动生成，可填写 invoice" /></label>
+    <label class="field">名称 *<input id="cName" type="text" maxlength="128" /></label>
+    <label class="field">类型
+      <select id="cType"><option value="WORKER">子 Agent</option><option value="SUPERVISOR">主 Agent</option></select>
     </label>
-    <label class="field">description<textarea id="cDesc" rows="2"></textarea></label>
+    <label class="field">简介<textarea id="cDesc" rows="2" maxlength="1000"></textarea></label>
+    <label class="field">提示词 *<textarea id="cPrompt" rows="5" maxlength="20000" placeholder="描述职责、回答方式和约束"></textarea></label>
+    <label class="field">使用模型<select id="cModel"><option value="">使用系统默认</option></select></label><h4>可用工具</h4><div id="cTools"></div>
+    <h4>可用技能</h4><p class="hint">选择技能会自动授予其说明中列出的工具或检索能力。</p><div id="cSkills"></div>
+    <div id="cChildrenWrap" class="hidden"><h4>关联子 Agent</h4><p class="hint">仅显示已启用的子 Agent，启用主 Agent 前至少关联一个。</p><div id="cChildren"></div></div>
+    <div id="createError" role="alert" class="issue error hidden"></div>
     <div class="toolbar" style="margin:0">
       <button type="button" class="secondary" id="createCancel">取消</button>
       <span class="spacer"></span>
-      <button type="button" id="createOk">创建</button>
+      <button type="button" id="createOk">创建草稿</button>
     </div>
   </div>
 </div>
@@ -251,6 +270,6 @@
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script src="/js/admin-api.js"></script>
-<script src="/js/admin-app.js"></script>
+<script src="/js/monitor-app.js"></script><script src="/js/support-app.js"></script><script src="/js/resource-app.js"></script><script src="/js/admin-app.js"></script>
 </body>
 </html>

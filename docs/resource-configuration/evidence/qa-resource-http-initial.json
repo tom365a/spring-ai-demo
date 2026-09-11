@@ -1,0 +1,886 @@
+{
+  "at": "2026-09-10T09:15:26.308Z",
+  "prefix": "q_mtvbaqqs",
+  "checks": [
+    {
+      "name": "confirmation HTTP x tool-test",
+      "passed": true,
+      "evidence": {
+        "pendingId": "bf766710-a877-4101-8a36-21d2f81e9303",
+        "trace": [
+          {
+            "name": "q_mtvbaqqs_write",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 6,
+            "success": true,
+            "resourceId": "b933a9ea-33a2-44f4-8698-9198707581a8",
+            "resourceVersion": -1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "diagnostics": {
+          "taskId": "5203807f-55cc-43ac-aa66-0a606e21bfc3",
+          "models": [],
+          "remainingMs": 119991,
+          "transfers": 0,
+          "agents": {}
+        }
+      }
+    },
+    {
+      "name": "confirmation HTTP x trial",
+      "passed": true,
+      "evidence": {
+        "pendingId": "722ee0e6-d71b-4d87-a2b3-579e5c031dc2",
+        "trace": [
+          {
+            "name": "q_mtvbaqqs_write",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 3,
+            "success": true,
+            "resourceId": "b933a9ea-33a2-44f4-8698-9198707581a8",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "diagnostics": {
+          "taskId": "4474ccdb-70e6-4b52-ad1e-883643ddf644",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29975,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29975,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirmation HTTP x chat",
+      "passed": true,
+      "evidence": {
+        "pendingId": "0fad51cc-de07-410f-8cb8-ca7b4cea72fc",
+        "trace": [
+          {
+            "name": "q_mtvbaqqs_write",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 2,
+            "success": true,
+            "resourceId": "b933a9ea-33a2-44f4-8698-9198707581a8",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "diagnostics": {
+          "taskId": "6743991a-e18e-4267-ab1b-ab95f1af7320",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_main",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 119984,
+          "transfers": 1,
+          "agents": {
+            "q_mtvbaqqs_main": {
+              "maxToolRounds": 0,
+              "remainingMs": 119996,
+              "toolRounds": 0
+            },
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29988,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirmation MCP x tool-test",
+      "passed": true,
+      "evidence": {
+        "pendingId": "370e66cb-11d1-4b58-95b0-279f3a2e2bf6",
+        "trace": [
+          {
+            "name": "mcp_a0221e7af86ca5897d7977229f06493b",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "MCP",
+            "latencyMs": 7,
+            "success": true,
+            "resourceId": "74ea7185-e215-47cc-87e2-05624c5d08c5",
+            "resourceVersion": -1,
+            "state": "SUCCEEDED",
+            "nativeName": "qa_write"
+          }
+        ],
+        "diagnostics": {
+          "taskId": "f55eb57a-ba54-47d7-be83-5973af13c335",
+          "models": [],
+          "remainingMs": 119992,
+          "transfers": 0,
+          "agents": {}
+        }
+      }
+    },
+    {
+      "name": "confirmation MCP x trial",
+      "passed": true,
+      "evidence": {
+        "pendingId": "386291d9-2a30-4a95-b53e-9948fd0d041f",
+        "trace": [
+          {
+            "name": "mcp_a0221e7af86ca5897d7977229f06493b",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "MCP",
+            "latencyMs": 7,
+            "success": true,
+            "resourceId": "74ea7185-e215-47cc-87e2-05624c5d08c5",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": "qa_write"
+          }
+        ],
+        "diagnostics": {
+          "taskId": "733dae19-0d56-443b-8311-ab08044b6e0b",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29983,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29983,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirmation MCP x chat",
+      "passed": true,
+      "evidence": {
+        "pendingId": "14787a31-f554-44b4-a9ce-94825ecf3dce",
+        "trace": [
+          {
+            "name": "mcp_a0221e7af86ca5897d7977229f06493b",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "MCP",
+            "latencyMs": 7,
+            "success": true,
+            "resourceId": "74ea7185-e215-47cc-87e2-05624c5d08c5",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": "qa_write"
+          }
+        ],
+        "diagnostics": {
+          "taskId": "f37b4229-5889-40cc-8e42-fceb0d904fb9",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_main",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 119980,
+          "transfers": 1,
+          "agents": {
+            "q_mtvbaqqs_main": {
+              "maxToolRounds": 0,
+              "remainingMs": 119996,
+              "toolRounds": 0
+            },
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29984,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirmation BUILTIN x trial",
+      "passed": true,
+      "evidence": {
+        "pendingId": "c6fe999f-af17-410c-b970-19ecab64070f",
+        "trace": [
+          {
+            "name": "create_ticket",
+            "arguments": {
+              "userId": "[已脱敏]",
+              "category": "[已脱敏]",
+              "description": "[已脱敏]",
+              "priority": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "BUILTIN",
+            "latencyMs": 4,
+            "success": true,
+            "resourceId": "5ef63b11-6ef9-4a57-abe9-9bc1f6bcc94d",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "diagnostics": {
+          "taskId": "11c8102c-2a49-4691-8795-98e89201fade",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29986,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29986,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "confirmation BUILTIN x chat",
+      "passed": true,
+      "evidence": {
+        "pendingId": "439ef897-1dc5-4643-87d4-23a3f229ba83",
+        "trace": [
+          {
+            "name": "create_ticket",
+            "arguments": {
+              "userId": "[已脱敏]",
+              "category": "[已脱敏]",
+              "description": "[已脱敏]",
+              "priority": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "BUILTIN",
+            "latencyMs": 1,
+            "success": true,
+            "resourceId": "5ef63b11-6ef9-4a57-abe9-9bc1f6bcc94d",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "diagnostics": {
+          "taskId": "b0d816b7-c042-4cf3-b90c-c09258fa5a4e",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_main",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 1,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 119987,
+          "transfers": 1,
+          "agents": {
+            "q_mtvbaqqs_main": {
+              "maxToolRounds": 0,
+              "remainingMs": 119997,
+              "toolRounds": 0
+            },
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29990,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "concurrent confirmations execute HTTP write exactly once",
+      "passed": true,
+      "evidence": [
+        409,
+        409,
+        409,
+        200,
+        409,
+        409
+      ]
+    },
+    {
+      "name": "cancel and wrong-session confirmation have zero effects",
+      "passed": true,
+      "evidence": {
+        "wrongStatus": 409
+      }
+    },
+    {
+      "name": "new chat invalidates old pending action",
+      "passed": true,
+      "evidence": {
+        "status": 409
+      }
+    },
+    {
+      "name": "completed confirmed turn enters public history without private tool reasoning",
+      "passed": true,
+      "evidence": {
+        "model": "qa-kimi-model",
+        "stream": false,
+        "reasoning_effort": "low",
+        "max_completion_tokens": 4096,
+        "messages": [
+          {
+            "role": "system",
+            "content": "QA_WORKER"
+          },
+          {
+            "role": "user",
+            "content": "QA_COMMAND {\"tool\":\"q_mtvbaqqs_write\",\"args\":{\"label\":\"history-proof\"}}"
+          },
+          {
+            "role": "assistant",
+            "content": "QA_DONE {\"ok\":true,\"receipt\":\"QA_RECEIPT\",\"body\":{\"label\":\"history-proof\"}}"
+          },
+          {
+            "role": "user",
+            "content": "NEXT_PUBLIC_MESSAGE"
+          }
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "q_mtvbaqqs_write",
+              "description": "q_mtvbaqqs write",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "q_mtvbaqqs_read",
+              "description": "q_mtvbaqqs read",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "mcp_a0221e7af86ca5897d7977229f06493b",
+              "description": "qa_write",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "name": "create_ticket",
+              "description": "创建工单",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "userId": {
+                    "type": "string",
+                    "description": "用户 ID"
+                  },
+                  "category": {
+                    "type": "string",
+                    "description": "问题分类：破损少件/物流异常/退换货/其他"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "问题描述"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "description": "优先级 P1/P2/P3"
+                  }
+                },
+                "required": [
+                  "userId",
+                  "category",
+                  "description",
+                  "priority"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "zero tool rounds denies whole batch",
+      "passed": true,
+      "evidence": {
+        "answer": "执行已停止：工具调用轮数已耗尽",
+        "agentCode": "q_mtvbaqqs_worker",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [],
+        "promptsRendered": {},
+        "latencyMs": 13,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "48798a1b-5e56-4d3d-ac9d-33ac22ba8264",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 2,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29997,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 0,
+              "remainingMs": 29997,
+              "toolRounds": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "eleven calls reject entire batch before execution",
+      "passed": true,
+      "evidence": {
+        "answer": "执行已停止：工具批次超过10项，整批未执行",
+        "agentCode": "q_mtvbaqqs_worker",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [],
+        "promptsRendered": {},
+        "latencyMs": 12,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "070c5e87-81b1-463d-8732-e4a781f9d1ce",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 3,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29997,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29997,
+              "toolRounds": 0
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "two calls in one batch consume one round",
+      "passed": true,
+      "evidence": {
+        "answer": "QA_DONE {\"ok\":true,\"receipt\":\"QA_RECEIPT\",\"body\":{}} {\"ok\":true,\"receipt\":\"QA_RECEIPT\",\"body\":{}}",
+        "agentCode": "q_mtvbaqqs_worker",
+        "agentVersion": null,
+        "routeTrace": [],
+        "toolCalls": [
+          {
+            "name": "q_mtvbaqqs_read",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 2,
+            "success": true,
+            "resourceId": "7fdb5d50-8acd-40dd-8d25-d812503d0c6a",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          },
+          {
+            "name": "q_mtvbaqqs_read",
+            "arguments": {
+              "label": "[已脱敏]"
+            },
+            "result": "[SUCCEEDED] 工具调用完成",
+            "source": "HTTP",
+            "latencyMs": 2,
+            "success": true,
+            "resourceId": "7fdb5d50-8acd-40dd-8d25-d812503d0c6a",
+            "resourceVersion": 1,
+            "state": "SUCCEEDED",
+            "nativeName": null
+          }
+        ],
+        "promptsRendered": {},
+        "latencyMs": 25,
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "diagnostics": {
+          "taskId": "2f1c3f4f-50a4-4e13-8df5-b14e57d8e340",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 4,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            },
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 4,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29987,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 1,
+              "remainingMs": 29987,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "resource publish invalidates pending confirmation",
+      "passed": true,
+      "evidence": {
+        "sessionId": "s_812de6d11555",
+        "answer": "相关版本或启用状态已变化，原确认失效；请在此会话重新发起。已耗预算不会退还。",
+        "intent": "trial",
+        "agentName": "q_mtvbaqqs_worker",
+        "confidence": 1,
+        "reason": "资源快照执行",
+        "citations": [],
+        "toolCalls": [],
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "mode": "spring-ai-multi-agent",
+        "diagnostics": {
+          "taskId": "d2d19ee3-6e59-40c1-8d10-3e1c4b04a357",
+          "models": [
+            {
+              "agentCode": "q_mtvbaqqs_worker",
+              "agentVersion": 5,
+              "resourceId": "f56116a6-0adb-4ec1-8819-fc252e67dcb9",
+              "resourceVersion": 1,
+              "provider": "KIMI",
+              "model": "qa-kimi-model",
+              "usage": {
+                "promptTokens": 3,
+                "completionTokens": 2,
+                "totalTokens": 5
+              }
+            }
+          ],
+          "remainingMs": 29995,
+          "transfers": 0,
+          "agents": {
+            "q_mtvbaqqs_worker": {
+              "maxToolRounds": 3,
+              "remainingMs": 29995,
+              "toolRounds": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "viewer cannot save and editor cannot change credentials or target",
+      "passed": true,
+      "evidence": {
+        "viewer": 403,
+        "key": 403,
+        "target": 400
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "confirmation BUILTIN x tool-test",
+      "error": "AssertionError [ERR_ASSERTION]: {\"status\":400,\"code\":40001,\"message\":\"inputSchema 包含不支持的约束: $schema\",\"traceId\":\"tr_b589ba19\",\"data\":null}\n\n40001 !== 0\n\n    at api (file:///C:/spring-ai-demo/scripts/qa-resource-http.mjs:37:66)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///C:/spring-ai-demo/scripts/qa-resource-http.mjs:61:37\n    at async check (file:///C:/spring-ai-demo/scripts/qa-resource-http.mjs:38:52)\n    at async file:///C:/spring-ai-demo/scripts/qa-resource-http.mjs:59:74"
+    }
+  ],
+  "passed": false,
+  "fixtureRequests": {
+    "models": 32,
+    "effects": 10
+  },
+  "fixturePort": 49690
+}

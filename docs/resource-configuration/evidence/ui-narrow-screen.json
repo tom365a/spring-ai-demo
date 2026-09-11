@@ -1,0 +1,50 @@
+{
+  "at": "2026-09-10T15:52:00Z",
+  "source": "real browser against the isolated backend http://localhost:18080 (owned loopback model fixture 18091); the 8080 user application and .env were not touched",
+  "viewport": "390x800 emulated, then desktop",
+  "method": "for each first-level page and its detail dialog: document.documentElement.scrollWidth vs clientWidth, plus a detector for controls squeezed to under 80px wide and three or more line-heights tall",
+  "beforeFix": {
+    "modelDialogActionBar": {
+      "selector": ".resource-actions button",
+      "css": "flex:1 (flex-basis 0) inside flex-wrap:wrap, so six buttons never wrapped",
+      "measured": [
+        {"text": "保存草稿", "w": 49, "h": 144},
+        {"text": "发布更新", "w": 49, "h": 144},
+        {"text": "停用", "w": 51, "h": 144},
+        {"text": "设为系统默认", "w": 51, "h": 144},
+        {"text": "引用关系", "w": 51, "h": 144},
+        {"text": "版本 / 审计", "w": 51, "h": 144}
+      ],
+      "effect": "Chinese labels wrapped one character per line; the sticky action bar was 144px tall and hard to read"
+    },
+    "agentTableCells": {
+      "selector": "#agentTable td",
+      "measured": [{"column": "名称", "w": 43}, {"column": "状态", "w": 25}, {"column": "线上版本", "w": 26}, {"control": "试运行", "w": 43, "h": 69}],
+      "effect": "auto table layout collapsed columns to a few characters per line even though the table has its own overflow:auto"
+    }
+  },
+  "afterFix": {
+    "css": [".resource-actions button{flex:1 1 auto;min-width:104px}", "#agentTable th,#agentTable td{white-space:nowrap}"],
+    "modelDialogActionBar": [
+      {"text": "保存草稿", "w": 110, "h": 39, "row": 1},
+      {"text": "发布更新", "w": 110, "h": 39, "row": 1},
+      {"text": "停用", "w": 104, "h": 39, "row": 1},
+      {"text": "设为系统默认", "w": 182, "h": 39, "row": 2},
+      {"text": "引用关系", "w": 150, "h": 39, "row": 2},
+      {"text": "版本 / 审计", "w": 191, "h": 39, "row": 3},
+      {"text": "删除", "w": 141, "h": 39, "row": 3}
+    ],
+    "agentTable": {"clientWidth": 336, "scrollWidth": 822, "rowHeights": [52, 52, 52], "note": "wide content scrolls inside the table's own box"},
+    "squeezedControlsAcrossAllPagesAndDialogs": 0,
+    "documentHorizontalOverflow": {"docScrollWidth": 390, "clientWidth": 390, "overflowingOutsideScrollers": []},
+    "desktop": {"docScrollWidth": 541, "clientWidth": 541, "rowHeights": [52, 52, 52], "note": "desktop layout unchanged by the fix"}
+  },
+  "pagesVerified": {
+    "Agents": "7 seeded agents listed from the live API (supervisor/knowledge/order/ticket/vision/chitchat/defect_comp)",
+    "模型": "KIMI 默认模型 已启用 v2 and OPENAI 默认模型 已停用 rendered from the live API",
+    "工具": "seeded BUILTIN tools listed (create_ticket, cancel_order, ask_for_defect_image, ...)",
+    "MCP": "empty-state rendered correctly on a fresh isolated database",
+    "技能": "3 seeded skills listed with 固定版本绑定 (clear_response, knowledge_answer, order_lookup)"
+  },
+  "notClaimed": "this run verified page rendering, navigation, detail dialogs and narrow-screen layout; it did not repeat the create/publish/trial browser flows recorded in FRONTEND_SELF_TEST, and it used no real provider credentials"
+}

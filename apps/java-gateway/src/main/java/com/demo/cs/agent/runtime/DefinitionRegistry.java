@@ -10,33 +10,38 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class DefinitionRegistry {
 
-    private final ConcurrentHashMap<String, PublishedAgent> store = new ConcurrentHashMap<>();
+    private volatile Map<String, PublishedAgent> store = Map.of();
 
     public Optional<PublishedAgent> get(String code) {
         if (code == null) return Optional.empty();
         return Optional.ofNullable(store.get(code));
     }
 
-    public void replace(String code, PublishedAgent snap) {
+    public synchronized void replace(String code, PublishedAgent snap) {
         if (code == null || snap == null) return;
-        store.put(code, snap);
+        var next = new java.util.HashMap<>(store);
+        next.put(code, snap);
+        store = Map.copyOf(next);
     }
 
-    public void remove(String code) {
-        if (code != null) store.remove(code);
+    public synchronized void remove(String code) {
+        var next = new java.util.HashMap<>(store);
+        if (code != null) next.remove(code);
+        store = Map.copyOf(next);
     }
 
     public Map<String, PublishedAgent> allEnabled() {
         return Map.copyOf(store);
     }
 
-    public void clearAndLoad(Collection<PublishedAgent> agents) {
-        store.clear();
-        if (agents == null) return;
+    public synchronized void clearAndLoad(Collection<PublishedAgent> agents) {
+        var next = new java.util.HashMap<String, PublishedAgent>();
+        if (agents == null) { store = Map.of(); return; }
         for (PublishedAgent agent : agents) {
             if (agent != null && agent.code() != null) {
-                store.put(agent.code(), agent);
+                next.put(agent.code(), agent);
             }
         }
+        store = Map.copyOf(next);
     }
 }

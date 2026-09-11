@@ -1,0 +1,388 @@
+{
+  "capturedAt": "2026-09-10T11:36:22.3062010+08:00",
+  "method": "Product Agent read-only HTTP review; no browser actions completed",
+  "runtime": {
+    "items": [
+      {
+        "loadedVersion": 2,
+        "name": "页面验收子 Agent",
+        "type": "WORKER",
+        "code": "agent_02a1b3db9ecf4a6a"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "闲聊",
+        "type": "WORKER",
+        "code": "chitchat"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "瑕疵补偿",
+        "type": "WORKER",
+        "code": "defect_comp"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "知识问答",
+        "type": "WORKER",
+        "code": "knowledge"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "订单履约",
+        "type": "WORKER",
+        "code": "order"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "启动联调主 Agent",
+        "type": "SUPERVISOR",
+        "code": "root_probe_main"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "启动联调子 Agent",
+        "type": "WORKER",
+        "code": "root_probe_worker"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "主路由",
+        "type": "SUPERVISOR",
+        "code": "supervisor"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "售后工单",
+        "type": "WORKER",
+        "code": "ticket"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "页面验收主 Agent",
+        "type": "SUPERVISOR",
+        "code": "ui_accept_main"
+      },
+      {
+        "loadedVersion": 1,
+        "name": "视觉理解",
+        "type": "WORKER",
+        "code": "vision"
+      }
+    ],
+    "configEnabled": true
+  },
+  "worker": {
+    "draft": {
+      "code": "agent_02a1b3db9ecf4a6a",
+      "name": "页面验收子 Agent",
+      "description": "UI创建；负责订单查询 <安全文本>",
+      "type": "WORKER",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [
+        "query_order"
+      ],
+      "skills": [
+        "clear_response",
+        "order_lookup"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [],
+      "routing": null,
+      "policies": {
+        "allowWriteTools": true,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 0
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "published": {
+      "code": "agent_02a1b3db9ecf4a6a",
+      "name": "页面验收子 Agent",
+      "description": "UI创建；负责订单查询 <安全文本>",
+      "type": "WORKER",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_WORKER_V2：先查工具再给出简洁结论。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [
+        "query_order"
+      ],
+      "skills": [
+        "clear_response",
+        "order_lookup"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [],
+      "routing": null,
+      "policies": {
+        "allowWriteTools": true,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 0
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "dirty": false,
+    "draftRevision": 3,
+    "publishedVersion": 2,
+    "status": "PUBLISHED",
+    "enabled": true,
+    "updatedAt": "2026-09-10T03:24:32.520154Z",
+    "updatedBy": "admin"
+  },
+  "main": {
+    "draft": {
+      "code": "ui_accept_main",
+      "name": "页面验收主 Agent",
+      "description": "将用户请求分配给页面新建的订单查询子 Agent",
+      "type": "SUPERVISOR",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [],
+      "skills": [
+        "clear_response"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [
+        {
+          "agentCode": "agent_02a1b3db9ecf4a6a",
+          "alias": null,
+          "whenToUse": "UI创建；负责订单查询 <安全文本>",
+          "priority": 100,
+          "enabled": true
+        }
+      ],
+      "routing": {
+        "confidenceThreshold": 0.55,
+        "allowNone": true,
+        "clarifyPrompt": null
+      },
+      "policies": {
+        "allowWriteTools": false,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 1
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "published": {
+      "code": "ui_accept_main",
+      "name": "页面验收主 Agent",
+      "description": "将用户请求分配给页面新建的订单查询子 Agent",
+      "type": "SUPERVISOR",
+      "modelConfig": {
+        "chatModel": null,
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "enableVision": false
+      },
+      "prompts": {
+        "systemPrompt": "UI_ACCEPT_MAIN：根据子 Agent 目录选择目标并输出 RouteDecision JSON。",
+        "userPromptTemplate": "{{text}}",
+        "outputMode": "TEXT"
+      },
+      "outputSchema": null,
+      "tools": [],
+      "skills": [
+        "clear_response"
+      ],
+      "mcp": {
+        "enabled": false,
+        "serverIds": [],
+        "toolAllowlist": []
+      },
+      "capabilities": {
+        "enableRag": false
+      },
+      "children": [
+        {
+          "agentCode": "agent_02a1b3db9ecf4a6a",
+          "alias": null,
+          "whenToUse": "UI创建；负责订单查询 <安全文本>",
+          "priority": 100,
+          "enabled": true
+        }
+      ],
+      "routing": {
+        "confidenceThreshold": 0.55,
+        "allowNone": true,
+        "clarifyPrompt": null
+      },
+      "policies": {
+        "allowWriteTools": false,
+        "requireConfirmFor": [],
+        "maxToolRounds": 3,
+        "maxChildHops": 1
+      },
+      "memory": {
+        "injectSummary": true,
+        "windowSize": null,
+        "injectDescriptionToSupervisor": true
+      },
+      "ui": {
+        "icon": null,
+        "tags": [],
+        "sortOrder": 100
+      }
+    },
+    "dirty": false,
+    "draftRevision": 1,
+    "publishedVersion": 1,
+    "status": "PUBLISHED",
+    "enabled": true,
+    "updatedAt": "2026-09-10T03:18:31.81573Z",
+    "updatedBy": "admin"
+  },
+  "skills": {
+    "items": [
+      {
+        "code": "clear_response",
+        "name": "清晰表达",
+        "description": "先给结论，再列出可执行步骤；不额外授予工具权限。",
+        "applicableTypes": [
+          "SUPERVISOR",
+          "WORKER"
+        ],
+        "instructions": "回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。",
+        "tools": [],
+        "enableRag": false
+      },
+      {
+        "code": "order_lookup",
+        "name": "订单查询",
+        "description": "自动开放查询订单和查询物流两个只读工具。",
+        "applicableTypes": [
+          "SUPERVISOR",
+          "WORKER"
+        ],
+        "instructions": "涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+        "tools": [
+          "query_order",
+          "query_logistics"
+        ],
+        "enableRag": false
+      },
+      {
+        "code": "knowledge_answer",
+        "name": "知识检索问答",
+        "description": "自动检索项目知识库并将结果交给模型。",
+        "applicableTypes": [
+          "WORKER"
+        ],
+        "instructions": "依据提供的知识检索结果回答，标注引用；检索内容不足时明确说明未知。",
+        "tools": [],
+        "enableRag": true
+      }
+    ]
+  },
+  "filteredList": {
+    "items": [
+      {
+        "code": "ui_accept_main",
+        "name": "页面验收主 Agent",
+        "type": "SUPERVISOR",
+        "status": "PUBLISHED",
+        "publishedVersion": 1,
+        "enabled": true,
+        "description": "将用户请求分配给页面新建的订单查询子 Agent",
+        "updatedAt": "2026-09-10T03:18:31.81573Z"
+      }
+    ],
+    "total": 1
+  },
+  "versions": {
+    "items": [
+      {
+        "version": 2,
+        "publishedAt": "2026-09-10T03:22:46.990643Z",
+        "publishedBy": "admin",
+        "remark": ""
+      },
+      {
+        "version": 1,
+        "publishedAt": "2026-09-10T03:17:05.474158Z",
+        "publishedBy": "admin",
+        "remark": "启用配置"
+      }
+    ]
+  }
+}

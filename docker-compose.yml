@@ -33,8 +33,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/customer_service
       SPRING_DATASOURCE_USERNAME: cs
       SPRING_DATASOURCE_PASSWORD: cs123
-      SPRING_AI_OPENAI_API_KEY: ${LLM_API_KEY:-sk-xxx}
-      SPRING_AI_OPENAI_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com}
+      SPRING_PROFILES_ACTIVE: ${LLM_PROVIDER:-kimi}
+      LLM_PROVIDER: ${LLM_PROVIDER:-kimi}
       APP_MCP_HTTP_BASE_URL: http://knowledge-mcp:3100
       APP_KNOWLEDGE_SAMPLE_DIR: /app/samples/knowledge
       APP_UPLOAD_DIR: /app/uploads

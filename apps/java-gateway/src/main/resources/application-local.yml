@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:cs;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:file:./data/cs;MODE=PostgreSQL;DB_CLOSE_ON_EXIT=FALSE}
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -19,9 +19,9 @@ app:
     backend: simple
   knowledge-sample-dir: ../../samples/knowledge
   agent-config:
-    enabled: ${APP_AGENT_CONFIG_ENABLED:false}
+    enabled: ${APP_AGENT_CONFIG_ENABLED:true}
     seed-on-startup: true
-    fallback-to-legacy: true
+    fallback-to-legacy: false
     prompt-max-length: 20000
     trial-session-ttl-minutes: 60
 

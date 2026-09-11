@@ -1,0 +1,143 @@
+{
+  "at": "2026-09-10T06:45:04.756Z",
+  "base": "http://127.0.0.1:18080",
+  "checks": [
+    {
+      "name": "kimi-active-embedding-disabled",
+      "data": {
+        "mode": "spring-ai-multi-agent",
+        "mcpEnabled": false,
+        "ragTopK": 5,
+        "ragScoreThreshold": 0.15,
+        "routeConfidenceThreshold": 0.55,
+        "sessionWindowSize": 10,
+        "llmModel": "kimi-k3",
+        "llmProvider": "kimi",
+        "embeddingModel": "disabled",
+        "retrievalMode": "本地关键词检索",
+        "vectorBackend": "lexical",
+        "agentConfigEnabled": true,
+        "agentConfigFallbackToLegacy": false,
+        "agentConfigSeedOnStartup": true
+      }
+    },
+    {
+      "name": "local-knowledge-ingest-and-retrieval",
+      "data": {
+        "hits": [
+          {
+            "content": "星河快递配送时效为三天，服务电话为 400-123-5678。",
+            "score": 1,
+            "metadata": {
+              "score": 1,
+              "source": "live-acceptance",
+              "title": "接入验证物流说明",
+              "doc_id": "doc_5b8df71b32cc",
+              "retrieval": "lexical"
+            }
+          },
+          {
+            "content": "# 物流配送 FAQ\n\n## 发货时效\n- 现货订单：付款后 **24 小时内** 发货（节假日顺延）。\n- 预售订单：以商品页标注时间为准。\n\n## 配送范围\n- 支持全国大部分地区（港澳台与部分偏远地区可能延期）。\n- 海外配送需选择「跨境直邮」配送方式。\n\n## 查询物流\n提供订单号即可查询最新物流轨迹。常见状态：\n- 待发货\n- 已揽收\n- 运输中\n- 派送中\n- 已签收\n\n## 超时未发货\n若超过承诺发货时间仍未发货，可申请：\n1. 催发货\n2. 取消订单并全额退款\n3. 创建客服工单加急处理\n\n## 运费说明\n- 满 99 元包邮（偏远地区除外）。\n- 退换货运费规则见《退换货政策》。",
+            "score": 0.2857142857142857,
+            "metadata": {
+              "score": 0.2857142857142857,
+              "source": "bootstrap:shipping-faq.md",
+              "title": "shipping-faq",
+              "doc_id": "doc_49652c97b2ba",
+              "retrieval": "lexical"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "main-agent-routes-to-order-and-answers",
+      "data": {
+        "sessionId": "s_39b95d3f8877",
+        "answer": "查询结果：订单 ORD20260730001\n\n- 状态：待发货\n- 商品：无线耳机 x1\n- 金额：299.00 元\n- 下单时间：2026-07-28 10:00 (UTC)\n- 当前可取消\n\n如需取消或查询物流，请告诉我。",
+        "intent": "order",
+        "agentName": "order",
+        "confidence": 0.98,
+        "reason": "用户明确要求查询订单状态，且文本中明确给出订单号。",
+        "citations": [],
+        "toolCalls": [],
+        "confirmRequired": false,
+        "confirmationPayload": null,
+        "mode": "spring-ai-multi-agent"
+      }
+    },
+    {
+      "name": "create-enable-real-kimi-trial",
+      "data": {
+        "code": "agent_90716db6fc92454e",
+        "trial": {
+          "answer": "星河连接已就绪。",
+          "agentCode": "agent_90716db6fc92454e",
+          "agentVersion": 1,
+          "routeTrace": [
+            {
+              "from": "trial",
+              "to": "agent_90716db6fc92454e",
+              "confidence": 1
+            }
+          ],
+          "toolCalls": [],
+          "promptsRendered": {
+            "system": "你是接入验收助手。用户询问验收口令时，只输出：星河连接已就绪。\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。",
+            "user": "验收口令是什么？"
+          },
+          "latencyMs": 3084
+        }
+      }
+    },
+    {
+      "name": "buffered-sse-completes",
+      "data": {
+        "contentType": "text/event-stream",
+        "sse": "event:intent\ndata:{\"targetAgent\":\"chitchat\",\"confidence\":0.98,\"intent\":\"chitchat\",\"reason\":\"用户要求一句话打招呼，属于闲聊/开场，无业务意图与附件。\",\"needClarify\":false,\"event\":\"intent\"}\n\nevent:agent\ndata:{\"agentName\":\"chitchat\",\"event\":\"agent\"}\n\nevent:token\ndata:{\"text\":\"你好呀，我可以帮你处理退换货、查订单/物流、取消待发货订单、破损售后开单或转人工～\",\"event\":\"token\"}\n\nevent:final\ndata:{\"sessionId\":\"s_26e577eed857\",\"answer\":\"你好呀，我可以帮你处理退换货、查订单/物流、取消待发货订单、破损售后开单或转人工～\",\"intent\":\"chitchat\",\"agentName\":\"chitchat\",\"confidence\":0.98,\"reason\":\"用户要求一句话打招呼，属于闲聊/开场，无业务意图与附件。\",\"citations\":[],\"toolCalls\":[],\"confirmRequired\":false,\"confirmationPayload\":null,\"mode\":\"spring-ai-multi-agent\",\"event\":\"final\"}\n\nevent:done\ndata:{\"ok\":true,\"event\":\"done\"}\n\n"
+      }
+    },
+    {
+      "name": "real-tool-callback-audit",
+      "data": {
+        "items": [
+          {
+            "id": 1,
+            "sessionId": "s_39b95d3f8877",
+            "name": "query_order",
+            "arguments": {
+              "orderId": "ORD20260730001",
+              "userId": "u_001"
+            },
+            "result": "{\"ok\":true,\"order\":{\"createdAt\":\"2026-07-28T10:00:00Z\",\"userId\":\"u_001\",\"items\":\"无线耳机 x1\",\"status\":\"待发货\",\"cancellable\":true,\"amount\":299.0,\"orderId\":\"ORD20260730001\"}}",
+            "source": "local",
+            "latencyMs": 0,
+            "success": true,
+            "createdAt": "2026-09-10T06:45:34.508609Z"
+          }
+        ]
+      }
+    },
+    {
+      "data": {
+        "answer": "根据《接入验证物流说明》，星河快递配送时效为三天。",
+        "agentCode": "knowledge",
+        "agentVersion": 1,
+        "routeTrace": [
+          {
+            "from": "trial",
+            "to": "knowledge",
+            "confidence": 1.0
+          }
+        ],
+        "toolCalls": [],
+        "promptsRendered": {
+          "system": "你是知识问答专员。只根据提供的【检索结果】回答售后政策、物流规则、账户帮助等问题。\n\n规则：\n1. 不得使用检索结果之外的政策细节；不确定就说「未找到依据」。\n2. 回答中用自然语言提及依据文档标题（如有）。\n3. 不要查询或编造任何具体订单状态。\n4. 若问题其实是查单/取消/开工单，简短说明应提供订单号并建议换一种问法（不要假装已办理）。\n5. 输出纯中文对用户话术，不要输出 JSON。",
+          "user": "【会话摘要】无\n【最近对话】\n无\n\n【检索结果】\n\n\n【MCP 补充】（可为空）\n（无）\n\n【用户问题】\n根据知识库，星河快递配送时效为多久？请简短回答。"
+        },
+        "latencyMs": 5075
+      },
+      "name": "real-kimi-knowledge-answer"
+    }
+  ]
+}

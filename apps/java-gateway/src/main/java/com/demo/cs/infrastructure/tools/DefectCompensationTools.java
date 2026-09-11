@@ -286,6 +286,7 @@ public class DefectCompensationTools {
     }
 
     private void audit(String toolName, Map<String, Object> args, String result, long latencyMs, boolean success) {
+        if (com.demo.cs.application.resources.ToolExecutionGateway.managedExecution()) return;
         try {
             CsToolInvocation inv = new CsToolInvocation();
             inv.setSessionId(SESSION_CONTEXT.get());

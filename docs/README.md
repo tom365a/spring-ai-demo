@@ -1,6 +1,42 @@
 # 设计文档索引
 
-> 更新日期：2026-08-07
+> 更新日期：2026-09-11
+
+## 真实实现改造（最新）
+
+[真实实现说明](real-implementations/REAL_IMPLEMENTATIONS.md)：订单/工单落库（状态机 + 悲观锁）、人工客服改为真人坐席控制台、知识检索改为本地 ONNX 语义向量、对话内「转人工」真正进坐席队列（不再编造排队位次与等待时长）；另修复了一个「业务拒绝被报成成功」的既有网关缺陷。全量测试 102/102。
+
+## 界面改造
+
+[UI 改造说明](ui-redesign/UI_REDESIGN.md)：面向客户演示重做视觉语言——方向 A「控制台蓝」，字体换为自托管的思源黑体（SIL OFL，免费商用）。信息架构与业务流程未改动；改造后全量回归通过。
+
+## 统一资源配置迭代（已交付）
+
+[完整需求范围 V1.0](resource-configuration/REQUIREMENTS_SCOPE.md)：模型、工具、MCP、技能一级页面，包含自定义 HTTP 工具、Agent 独立模型选择和实际生效的运行规则。
+
+实现与验证状态见 [项目计划进度](resource-configuration/PROJECT_PLAN.md#6-进度)：RC01–RC15 全部取得证据、无未关闭 P0/P1、产品验收通过；**本轮未部署到 8080 用户应用，上线由用户决定**。
+
+- [PRD](resource-configuration/PRD.md)、[交互原型](resource-configuration/PROTOTYPE.html)
+- [架构设计](resource-configuration/ARCHITECTURE.md)、[详细设计](resource-configuration/DETAILED_DESIGN.md)、[传输设计](resource-configuration/TRANSPORT_DESIGN.md)
+- [开发自测](resource-configuration/SELF_TEST_REPORT.md)、[前端自测与浏览器复核](resource-configuration/FRONTEND_SELF_TEST.md)
+- [测试计划](resource-configuration/TEST_PLAN.md)、[独立测试报告](resource-configuration/TEST_REPORT.md)（含全部复现命令）
+- [迁移与交付](resource-configuration/MIGRATION_AND_DELIVERY.md)、[迁移验证](resource-configuration/MIGRATION_VERIFICATION.md)
+- [RC14 真实供应商验收](resource-configuration/LIVE_ACCEPTANCE.md)、[产品验收报告](resource-configuration/ACCEPTANCE_REPORT.md)
+
+## OpenAI / Kimi K3 模型接入
+
+启动与模型配置以 [接入说明](model-providers/README.md) 为准：默认 Kimi K3，OpenAI 独立配置且无自动回退。检索已改为本地 ONNX 语义向量，见下。
+本次 [迭代计划](model-providers/PROJECT_PLAN.md)、[独立协议测试](model-providers/TEST_REPORT.md)、[真实应用验收](model-providers/LIVE_ACCEPTANCE.md) 记录了模型、工具、检索和 SSE 的实际验证边界。
+
+## 本轮 Agent 页面配置交付
+
+以 [agent-configuration/PRD.md](agent-configuration/PRD.md)、[架构设计](agent-configuration/ARCHITECTURE.md)及[前后端详细设计](agent-configuration/DETAILED_DESIGN.md)为当前配置功能的权威说明。以下初期设计文档中的默认开关、创建字段与启用流程已经演进，不再用于判断本轮功能是否完成。
+
+- [角色职责与项目排期](agent-configuration/PROJECT_PLAN.md)
+- [交互原型](agent-configuration/PROTOTYPE.html)
+- [开发自测](agent-configuration/SELF_TEST_REPORT.md)与[浏览器流程验证](agent-configuration/UI_TEST_REPORT.md)
+- [独立测试报告](agent-configuration/TEST_REPORT.md)与[产品验收报告](agent-configuration/ACCEPTANCE_REPORT.md)
+- [运行环境](agent-configuration/ENVIRONMENT.md)与[后续未完成项](agent-configuration/BACKLOG.md)
 
 ## 推荐阅读顺序
 
@@ -27,7 +63,7 @@
 
 | 文档 | 说明 | 实现状态 |
 |------|------|----------|
-| [ADMIN_AGENT_TECHNICAL_DESIGN.md](./ADMIN_AGENT_TECHNICAL_DESIGN.md) | Admin 后端落地（DDL / Runtime / API） | **A0–A4 已实现**（默认 flag 关闭） |
+| [ADMIN_AGENT_TECHNICAL_DESIGN.md](./ADMIN_AGENT_TECHNICAL_DESIGN.md) | 初期 Admin 后端设计（DDL / Runtime / API） | 已演进；当前默认配置模式开启 |
 | [AGENT_CONFIG_DESIGN.md](./AGENT_CONFIG_DESIGN.md) | 可配置 Agent 领域模型 / 管理页字段字典 | 领域设计；后端已用 |
 | [ADMIN_UI_CONFIG_TECHNICAL_DESIGN.md](./ADMIN_UI_CONFIG_TECHNICAL_DESIGN.md) | **管理前端 UI + 可配置联调** | **U0–U4 已实现**（`/admin.html`） |
 

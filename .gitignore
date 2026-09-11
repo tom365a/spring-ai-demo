@@ -11,3 +11,10 @@ uploads/**
 .DS_Store
 *.log
 *.jar.original
+.tools/
+/tmp/
+**/data/
+
+# 本地嵌入模型 23 MB，不入库；用 scripts/fetch-model.ps1 / .sh 拉取（revision 与 SHA256 已固定）
+apps/java-gateway/src/main/resources/models/bge-small-zh/model.onnx
+apps/java-gateway/src/main/resources/models/bge-small-zh/tokenizer.json

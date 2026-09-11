@@ -65,8 +65,13 @@ public final class AgentModels {
             String result,
             String source,
             long latencyMs,
-            boolean success
+            boolean success,
+            String resourceId,
+            Integer resourceVersion,
+            String state,
+            String nativeName
     ) {
+        public ToolCallRecord(String name,Map<String,Object> arguments,String result,String source,long latencyMs,boolean success) {this(name,arguments,result,source,latencyMs,success,null,null,success?"SUCCEEDED":"FAILED",null);}
         public ToolCallRecord {
             if (arguments == null) arguments = Map.of();
         }
@@ -110,8 +115,10 @@ public final class AgentModels {
             List<Citation> citations,
             List<ToolCallRecord> toolCalls,
             boolean confirmRequired,
-            Map<String, Object> confirmationPayload
+            Map<String, Object> confirmationPayload,
+            Map<String, Object> diagnostics
     ) {
+        public TurnOutcome(String sessionId,String answer,String intent,String agentName,Double confidence,String reason,List<Citation> citations,List<ToolCallRecord> toolCalls,boolean confirmRequired,Map<String,Object> confirmationPayload) {this(sessionId,answer,intent,agentName,confidence,reason,citations,toolCalls,confirmRequired,confirmationPayload,Map.of());}
         public static final String MODE = "spring-ai-multi-agent";
 
         public TurnOutcome {
@@ -170,6 +177,7 @@ public final class AgentModels {
             m.put("confirmRequired", confirmRequired);
             m.put("confirmationPayload", confirmationPayload);
             m.put("mode", MODE);
+            m.put("diagnostics", diagnostics);
             return m;
         }
     }

@@ -1,0 +1,63 @@
+/* 设计令牌 —— 方向 A「控制台蓝」。
+   所有页面只消费这里的变量，不写死颜色/字号/圆角。
+   换视觉方向 = 改这一份取值，不动组件样式。
+
+   字体：思源黑体 Noto Sans SC（SIL OFL 1.1，自托管，见 fonts/noto-sans-sc/OFL.txt）。
+   中英文同源，不再出现「拉丁走衬线、中文回退黑体」的混排。
+   对比度：正文级文字对底色均 >= 4.5:1（实测值见改造说明）。 */
+
+:root {
+  /* 字体 */
+  --font-sans: "Noto Sans SC", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+
+  /* 底色与容器 */
+  --bg: #f2f3f5;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --surface-3: #f7f8fa;
+
+  /* 左侧导航（深色） */
+  --sidebar-w: 208px;
+  --sidebar-bg: #1d2129;
+  --sidebar-line: #2a2f38;
+  --sidebar-text: #c9cdd4;
+  --sidebar-text-strong: #ffffff;
+  --sidebar-muted: #86909c;
+
+  /* 文字 */
+  --text-1: #1d2129;          /* 16.1:1 */
+  --text-2: #4e5969;          /*  7.1:1 */
+  --text-3: #5f6875;          /*  5.6:1 */
+  --text-placeholder: #6b7480;/*  4.7:1 */
+  --text-inverse: #ffffff;
+
+  /* 描边 */
+  --line: #e5e6eb;
+  --line-soft: #f2f3f5;
+  --line-strong: #c9cdd4;
+
+  /* 主色 */
+  --brand: #0b62d6;           /* 白底 5.6:1；作按钮底白字 5.6:1 */
+  --brand-hover: #0a58ca;
+  --brand-active: #094ba8;
+  --brand-tint: #f0f6ff;
+  --brand-border: #bedaff;
+
+  /* 语义色（文字取值均已满足小字对比度） */
+  --success: #087a20;  --success-bg: #e8ffea;  --success-border: #aff0b5;
+  --warning: #a85700;  --warning-bg: #fff7e8;  --warning-border: #ffd8bf;
+  --danger:  #c92a2a;  --danger-bg:  #ffece8;  --danger-border:  #fdcdc5;
+  --danger-solid: #d93026;
+  --info:    #0a5cab;  --info-bg:    #e8f7ff;  --info-border:    #bedaff;
+
+  /* 几何 */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-lg: 8px;
+  --control-h: 32px;
+  --control-h-sm: 28px;
+  --shadow-1: 0 1px 2px rgba(29, 33, 41, .06);
+  --shadow-2: 0 4px 16px rgba(29, 33, 41, .12);
+  --shadow-3: 0 8px 32px rgba(29, 33, 41, .18);
+}

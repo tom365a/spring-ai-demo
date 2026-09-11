@@ -1,0 +1,1095 @@
+{
+  "generatedAt": "2026-09-10T03:34:12.084Z",
+  "environment": {
+    "app": "Spring Boot 3.4.2 / Spring AI 1.0.0",
+    "java": "21.0.12.1",
+    "database": "H2 file ./data/qa-acceptance",
+    "http": "127.0.0.1:18080",
+    "modelFixture": "127.0.0.1:18091"
+  },
+  "httpChecks": [
+    {
+      "at": "2026-09-10T03:27:50.741Z",
+      "phase": "before",
+      "name": "auto-code-full-draft",
+      "data": {
+        "code": "agent_46eb3368d3bd4432",
+        "skills": [
+          "clear_response",
+          "order_lookup"
+        ],
+        "enabled": false
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.109Z",
+      "phase": "before",
+      "name": "formal-chat-skills-deduplicated-tools-success",
+      "data": {
+        "main": "qa_main_mtuyvqdo",
+        "worker": "agent_46eb3368d3bd4432",
+        "answer": "LOCAL_STUB_TOOL_RESULT \"{\\\"order\\\":{\\\"amount\\\":299.0,\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\",\\\"userId\\\":\\\"u_001\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"status\\\":\\\"待发货\\\",\\\"cancellable\\\":true},\\\"ok\\\":true}\"",
+        "modelEvidenceAt": [
+          "2026-09-10T03:27:51.067Z",
+          "2026-09-10T03:27:51.086Z"
+        ]
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.219Z",
+      "phase": "before",
+      "name": "draft-isolation",
+      "data": {
+        "draft": {
+          "code": "agent_46eb3368d3bd4432",
+          "name": "独立QA子Agent",
+          "description": "中文与特殊字符 <script>text</script>",
+          "type": "WORKER",
+          "modelConfig": {
+            "chatModel": null,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "enableVision": false
+          },
+          "prompts": {
+            "systemPrompt": "qa_worker_mtuyvqdo QA_HTTP_V2",
+            "userPromptTemplate": "{{text}}",
+            "outputMode": "TEXT"
+          },
+          "outputSchema": null,
+          "tools": [],
+          "skills": [],
+          "mcp": {
+            "enabled": false,
+            "serverIds": [],
+            "toolAllowlist": []
+          },
+          "capabilities": {
+            "enableRag": false
+          },
+          "children": [],
+          "routing": null,
+          "policies": {
+            "allowWriteTools": false,
+            "requireConfirmFor": [],
+            "maxToolRounds": 3,
+            "maxChildHops": 0
+          },
+          "memory": {
+            "injectSummary": true,
+            "windowSize": null,
+            "injectDescriptionToSupervisor": true
+          },
+          "ui": {
+            "icon": null,
+            "tags": [],
+            "sortOrder": 100
+          }
+        },
+        "published": {
+          "code": "agent_46eb3368d3bd4432",
+          "name": "独立QA子Agent",
+          "description": "中文与特殊字符 <script>text</script>",
+          "type": "WORKER",
+          "modelConfig": {
+            "chatModel": null,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "enableVision": false
+          },
+          "prompts": {
+            "systemPrompt": "qa_worker_mtuyvqdo QA_HTTP_V1",
+            "userPromptTemplate": "{{text}}",
+            "outputMode": "TEXT"
+          },
+          "outputSchema": null,
+          "tools": [
+            "query_order"
+          ],
+          "skills": [
+            "clear_response",
+            "order_lookup"
+          ],
+          "mcp": {
+            "enabled": false,
+            "serverIds": [],
+            "toolAllowlist": []
+          },
+          "capabilities": {
+            "enableRag": false
+          },
+          "children": [],
+          "routing": null,
+          "policies": {
+            "allowWriteTools": false,
+            "requireConfirmFor": [],
+            "maxToolRounds": 3,
+            "maxChildHops": 0
+          },
+          "memory": {
+            "injectSummary": true,
+            "windowSize": null,
+            "injectDescriptionToSupervisor": true
+          },
+          "ui": {
+            "icon": null,
+            "tags": [],
+            "sortOrder": 100
+          }
+        },
+        "dirty": true,
+        "draftRevision": 1,
+        "publishedVersion": 1,
+        "status": "PUBLISHED",
+        "enabled": true,
+        "updatedAt": "2026-09-10T03:27:51.141015Z",
+        "updatedBy": "admin"
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.295Z",
+      "phase": "before",
+      "name": "publish-removes-skill-and-tool-runtime-access",
+      "data": {
+        "version": 2,
+        "modelEvidenceAt": [
+          "2026-09-10T03:27:51.274Z"
+        ]
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.374Z",
+      "phase": "before",
+      "name": "rollback-restores-skill-snapshot",
+      "data": {
+        "draft": {
+          "code": "agent_46eb3368d3bd4432",
+          "name": "独立QA子Agent",
+          "description": "中文与特殊字符 <script>text</script>",
+          "type": "WORKER",
+          "modelConfig": {
+            "chatModel": null,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "enableVision": false
+          },
+          "prompts": {
+            "systemPrompt": "qa_worker_mtuyvqdo QA_HTTP_V1",
+            "userPromptTemplate": "{{text}}",
+            "outputMode": "TEXT"
+          },
+          "outputSchema": null,
+          "tools": [
+            "query_order"
+          ],
+          "skills": [
+            "clear_response",
+            "order_lookup"
+          ],
+          "mcp": {
+            "enabled": false,
+            "serverIds": [],
+            "toolAllowlist": []
+          },
+          "capabilities": {
+            "enableRag": false
+          },
+          "children": [],
+          "routing": null,
+          "policies": {
+            "allowWriteTools": false,
+            "requireConfirmFor": [],
+            "maxToolRounds": 3,
+            "maxChildHops": 0
+          },
+          "memory": {
+            "injectSummary": true,
+            "windowSize": null,
+            "injectDescriptionToSupervisor": true
+          },
+          "ui": {
+            "icon": null,
+            "tags": [],
+            "sortOrder": 100
+          }
+        },
+        "published": {
+          "code": "agent_46eb3368d3bd4432",
+          "name": "独立QA子Agent",
+          "description": "中文与特殊字符 <script>text</script>",
+          "type": "WORKER",
+          "modelConfig": {
+            "chatModel": null,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "enableVision": false
+          },
+          "prompts": {
+            "systemPrompt": "qa_worker_mtuyvqdo QA_HTTP_V1",
+            "userPromptTemplate": "{{text}}",
+            "outputMode": "TEXT"
+          },
+          "outputSchema": null,
+          "tools": [
+            "query_order"
+          ],
+          "skills": [
+            "clear_response",
+            "order_lookup"
+          ],
+          "mcp": {
+            "enabled": false,
+            "serverIds": [],
+            "toolAllowlist": []
+          },
+          "capabilities": {
+            "enableRag": false
+          },
+          "children": [],
+          "routing": null,
+          "policies": {
+            "allowWriteTools": false,
+            "requireConfirmFor": [],
+            "maxToolRounds": 3,
+            "maxChildHops": 0
+          },
+          "memory": {
+            "injectSummary": true,
+            "windowSize": null,
+            "injectDescriptionToSupervisor": true
+          },
+          "ui": {
+            "icon": null,
+            "tags": [],
+            "sortOrder": 100
+          }
+        },
+        "dirty": false,
+        "draftRevision": 2,
+        "publishedVersion": 3,
+        "status": "PUBLISHED",
+        "enabled": true,
+        "updatedAt": "2026-09-10T03:27:51.311958Z",
+        "updatedBy": "admin"
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.430Z",
+      "phase": "before",
+      "name": "disabled-linked-worker-no-model-dispatch",
+      "data": {
+        "answer": "当前主Agent没有可用子Agent，请在管理页启用关联子Agent。"
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.510Z",
+      "phase": "before",
+      "name": "reenable-validates-dependencies",
+      "data": {
+        "main": "qa_main_mtuyvqdo",
+        "worker": "agent_46eb3368d3bd4432"
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.604Z",
+      "phase": "before",
+      "name": "versions-and-published-trial",
+      "data": {
+        "versions": 3,
+        "trialVersion": 3
+      }
+    },
+    {
+      "at": "2026-09-10T03:27:51.610Z",
+      "phase": "before",
+      "name": "restart-preconditions",
+      "data": {
+        "worker": "agent_46eb3368d3bd4432",
+        "marker": "qa_worker_mtuyvqdo",
+        "main": "qa_main_mtuyvqdo",
+        "draftOnly": "agent_22154ac8ed6c4122",
+        "expectedVersion": 3,
+        "seedName": "QA seed user edit"
+      }
+    },
+    {
+      "at": "2026-09-10T03:28:59.823Z",
+      "phase": "after",
+      "name": "actual-jvm-restart-published-restoration-and-seed-preservation",
+      "data": {
+        "worker": "agent_46eb3368d3bd4432",
+        "marker": "qa_worker_mtuyvqdo",
+        "main": "qa_main_mtuyvqdo",
+        "draftOnly": "agent_22154ac8ed6c4122",
+        "expectedVersion": 3,
+        "seedName": "QA seed user edit",
+        "modelEvidenceAt": [
+          "2026-09-10T03:28:59.777Z",
+          "2026-09-10T03:28:59.796Z"
+        ],
+        "answer": "LOCAL_STUB_TOOL_RESULT \"{\\\"ok\\\":true,\\\"order\\\":{\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"amount\\\":299.0,\\\"cancellable\\\":true,\\\"status\\\":\\\"待发货\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"userId\\\":\\\"u_001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\"}}\""
+      }
+    },
+    {
+      "at": "2026-09-10T03:29:43.447Z",
+      "phase": "confirm",
+      "name": "pending-confirm-cannot-bypass-disabled-agent-or-removed-tool",
+      "data": {
+        "worker": "qa_confirm_mtuyy54c",
+        "main": "qa_confirm_main_mtuyy54c",
+        "sessionsBlocked": 2,
+        "clientPayloadIgnored": true
+      }
+    },
+    {
+      "at": "2026-09-10T03:30:56.762Z",
+      "phase": "disabled",
+      "name": "explicit-runtime-disabled-rejects-enable-and-explicit-chat",
+      "data": {
+        "configEnabled": false,
+        "items": []
+      }
+    },
+    {
+      "at": "2026-09-10T03:34:12.022Z",
+      "phase": "negative",
+      "name": "invalid-worker-missing-disabled-main-rejected",
+      "data": {
+        "validUser": "u_001",
+        "targets": [
+          "agent_46eb3368d3bd4432",
+          "qa_no_such_main",
+          "qa_main_mtuyvqdo"
+        ]
+      }
+    }
+  ],
+  "startupLogs": [
+    {
+      "file": "qa-server.log",
+      "line": "2026-09-10T11:25:54.195+08:00  INFO 10184 --- [java-gateway] [           main] com.demo.cs.CustomerServiceApplication   : Starting CustomerServiceApplication using Java 21.0.12.1 with PID 10184 (C:\\spring-ai-demo\\apps\\java-gateway\\target\\classes started by sjm in C:\\spring-ai-demo\\apps\\java-gateway)"
+    },
+    {
+      "file": "qa-server.log",
+      "line": "2026-09-10T11:26:11.165+08:00  INFO 10184 --- [java-gateway] [           main] c.d.c.a.agentconfig.AgentSeedService     : DefinitionRegistry loaded 7 enabled agents"
+    },
+    {
+      "file": "qa-server-restart.log",
+      "line": "2026-09-10T11:28:41.164+08:00  INFO 15644 --- [java-gateway] [           main] com.demo.cs.CustomerServiceApplication   : Starting CustomerServiceApplication using Java 21.0.12.1 with PID 15644 (C:\\spring-ai-demo\\apps\\java-gateway\\target\\classes started by sjm in C:\\spring-ai-demo\\apps\\java-gateway)"
+    },
+    {
+      "file": "qa-server-restart.log",
+      "line": "2026-09-10T11:28:57.470+08:00  INFO 15644 --- [java-gateway] [           main] c.d.c.a.agentconfig.AgentSeedService     : DefinitionRegistry loaded 9 enabled agents"
+    },
+    {
+      "file": "qa-server-restart.log",
+      "line": "2026-09-10T11:28:57.519+08:00  INFO 15644 --- [java-gateway] [           main] c.demo.cs.application.BootstrapRunner    : Knowledge base has 3 documents, skip bootstrap"
+    },
+    {
+      "file": "qa-server-disabled.log",
+      "line": "2026-09-10T11:29:56.092+08:00  INFO 11012 --- [java-gateway] [           main] com.demo.cs.CustomerServiceApplication   : Starting CustomerServiceApplication using Java 21.0.12.1 with PID 11012 (C:\\spring-ai-demo\\apps\\java-gateway\\target\\classes started by sjm in C:\\spring-ai-demo\\apps\\java-gateway)"
+    },
+    {
+      "file": "qa-server-disabled.log",
+      "line": "2026-09-10T11:30:11.728+08:00  INFO 11012 --- [java-gateway] [           main] c.d.c.a.agentconfig.AgentSeedService     : DefinitionRegistry loaded 11 enabled agents"
+    },
+    {
+      "file": "qa-server-disabled.log",
+      "line": "2026-09-10T11:30:11.783+08:00  INFO 11012 --- [java-gateway] [           main] c.demo.cs.application.BootstrapRunner    : Knowledge base has 3 documents, skip bootstrap"
+    },
+    {
+      "file": "qa-server-final.log",
+      "line": "2026-09-10T11:33:40.723+08:00  INFO 10120 --- [java-gateway] [           main] com.demo.cs.CustomerServiceApplication   : Starting CustomerServiceApplication using Java 21.0.12.1 with PID 10120 (C:\\spring-ai-demo\\apps\\java-gateway\\target\\classes started by sjm in C:\\spring-ai-demo\\apps\\java-gateway)"
+    },
+    {
+      "file": "qa-server-final.log",
+      "line": "2026-09-10T11:33:56.657+08:00  INFO 10120 --- [java-gateway] [           main] c.d.c.a.agentconfig.AgentSeedService     : DefinitionRegistry loaded 11 enabled agents"
+    },
+    {
+      "file": "qa-server-final.log",
+      "line": "2026-09-10T11:33:56.725+08:00  INFO 10120 --- [java-gateway] [           main] c.demo.cs.application.BootstrapRunner    : Knowledge base has 3 documents, skip bootstrap"
+    }
+  ],
+  "modelRows": [
+    {
+      "sequence": 13,
+      "at": "2026-09-10T03:27:50.959Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_main_mtuyvqdo QA_MAIN\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_46eb3368d3bd4432（agent_46eb3368d3bd4432）— 独立配置测试\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 14,
+      "at": "2026-09-10T03:27:51.067Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 15,
+      "at": "2026-09-10T03:27:51.086Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_14",
+                "type": "function",
+                "function": {
+                  "name": "query_order",
+                  "arguments": "{\"orderId\":\"ORD20260730001\",\"userId\":\"u_001\"}"
+                }
+              }
+            ]
+          },
+          {
+            "content": "\"{\\\"order\\\":{\\\"amount\\\":299.0,\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\",\\\"userId\\\":\\\"u_001\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"status\\\":\\\"待发货\\\",\\\"cancellable\\\":true},\\\"ok\\\":true}\"",
+            "role": "tool",
+            "name": "query_order",
+            "tool_call_id": "call_14"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 17,
+      "at": "2026-09-10T03:27:51.176Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_main_mtuyvqdo QA_MAIN\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_46eb3368d3bd4432（agent_46eb3368d3bd4432）— 独立配置测试\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 18,
+      "at": "2026-09-10T03:27:51.185Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 19,
+      "at": "2026-09-10T03:27:51.192Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_18",
+                "type": "function",
+                "function": {
+                  "name": "query_order",
+                  "arguments": "{\"orderId\":\"ORD20260730001\",\"userId\":\"u_001\"}"
+                }
+              }
+            ]
+          },
+          {
+            "content": "\"{\\\"order\\\":{\\\"amount\\\":299.0,\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\",\\\"userId\\\":\\\"u_001\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"status\\\":\\\"待发货\\\",\\\"cancellable\\\":true},\\\"ok\\\":true}\"",
+            "role": "tool",
+            "name": "query_order",
+            "tool_call_id": "call_18"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 21,
+      "at": "2026-09-10T03:27:51.268Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_main_mtuyvqdo QA_MAIN\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_46eb3368d3bd4432（agent_46eb3368d3bd4432）— 独立配置测试\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 22,
+      "at": "2026-09-10T03:27:51.274Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V2",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 25,
+      "at": "2026-09-10T03:27:51.600Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "试运行",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 26,
+      "at": "2026-09-10T03:28:59.658Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_main_mtuyvqdo QA_MAIN\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n你可路由到的子 Agent：\n1. agent_46eb3368d3bd4432（agent_46eb3368d3bd4432）— 独立配置测试\n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 27,
+      "at": "2026-09-10T03:28:59.777Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 28,
+      "at": "2026-09-10T03:28:59.796Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_worker_mtuyvqdo QA_HTTP_V1\n\n【技能：清晰表达】\n回答时先给出明确结论，再按需要列出简洁、可执行的步骤。不要编造未核实的信息。\n\n【技能：订单查询】\n涉及订单状态或物流时先查询对应工具，根据工具实际结果回答，不编造订单或物流状态。",
+            "role": "system"
+          },
+          {
+            "content": "独立QA查询订单 [route:agent_46eb3368d3bd4432] [tool:query_order]",
+            "role": "user"
+          },
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_27",
+                "type": "function",
+                "function": {
+                  "name": "query_order",
+                  "arguments": "{\"orderId\":\"ORD20260730001\",\"userId\":\"u_001\"}"
+                }
+              }
+            ]
+          },
+          {
+            "content": "\"{\\\"ok\\\":true,\\\"order\\\":{\\\"orderId\\\":\\\"ORD20260730001\\\",\\\"amount\\\":299.0,\\\"cancellable\\\":true,\\\"status\\\":\\\"待发货\\\",\\\"items\\\":\\\"无线耳机 x1\\\",\\\"userId\\\":\\\"u_001\\\",\\\"createdAt\\\":\\\"2026-07-28T10:00:00Z\\\"}}\"",
+            "role": "tool",
+            "name": "query_order",
+            "tool_call_id": "call_27"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2,
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "description": "根据订单号查询当前用户的订单状态与基本信息",
+              "name": "query_order",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "orderId": {
+                    "type": "string",
+                    "description": "订单号，如 ORD20260730001"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "当前用户 ID"
+                  }
+                },
+                "required": [
+                  "orderId",
+                  "userId"
+                ]
+              }
+            }
+          },
+          {
+            "type": "function",
+            "function": {
+              "description": "根据运单号查询物流轨迹",
+              "name": "query_logistics",
+              "parameters": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "additionalProperties": false,
+                "type": "object",
+                "properties": {
+                  "trackingNo": {
+                    "type": "string",
+                    "description": "运单号"
+                  }
+                },
+                "required": [
+                  "trackingNo"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "sequence": 30,
+      "at": "2026-09-10T03:29:43.197Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_confirm_main_mtuyy54c\n\n你可路由到的子 Agent：\n1. qa_confirm_mtuyy54c（qa_confirm_mtuyy54c）— \n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 取消订单 ORD20260730001 [route:qa_confirm_mtuyy54c]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n取消订单 ORD20260730001 [route:qa_confirm_mtuyy54c]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    },
+    {
+      "sequence": 32,
+      "at": "2026-09-10T03:29:43.328Z",
+      "path": "/v1/chat/completions",
+      "body": {
+        "messages": [
+          {
+            "content": "qa_confirm_main_mtuyy54c\n\n你可路由到的子 Agent：\n1. qa_confirm_mtuyy54c（qa_confirm_mtuyy54c）— \n请输出 targetAgent（必须是上表 code 之一，或 none 表示仅澄清）。",
+            "role": "system"
+          },
+          {
+            "content": "【会话状态】active\n【待确认摘要】无\n【会话摘要】无\n【最近对话】\nuser: 取消订单 ORD20260730001 [route:qa_confirm_mtuyy54c]\n\n\n【本轮用户】\nuserId=u_001\nhasAttachments=false attachmentCount=0\ntext:\n取消订单 ORD20260730001 [route:qa_confirm_mtuyy54c]\n\n请输出 RouteDecision JSON。\n",
+            "role": "user"
+          }
+        ],
+        "model": "gpt-4o-mini",
+        "stream": false,
+        "temperature": 0.2
+      }
+    }
+  ]
+}

@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface AgtAgentRepository extends JpaRepository<AgtAgent, String> {
     Optional<AgtAgent> findByCode(String code);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select a from AgtAgent a where a.code = :code")
+    Optional<AgtAgent> findForUpdateByCode(@org.springframework.data.repository.query.Param("code") String code);
     boolean existsByCode(String code);
     List<AgtAgent> findByStatusAndEnabledTrue(String status);
     List<AgtAgent> findAllByOrderBySortOrderAscCodeAsc();
