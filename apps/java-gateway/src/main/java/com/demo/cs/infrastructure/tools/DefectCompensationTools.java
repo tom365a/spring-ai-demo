@@ -155,7 +155,7 @@ public class DefectCompensationTools {
         ), () -> json(Map.of(
                 "ok", true,
                 "afterSaleId", nullToEmpty(afterSaleId),
-                "message", "您有一笔售后单待确认（" + nullToEmpty(afterSaleId) + "）。请回复「确认」同意或「拒绝」取消。"
+                "message", "您有一笔待确认的售后单（" + nullToEmpty(afterSaleId) + "）。"
         )));
     }
 

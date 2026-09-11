@@ -194,9 +194,14 @@ public class ManagedAgentRuntime implements ApplicationRunner {
  Map<String,Object> snapshot=new LinkedHashMap<>();snapshot.put("taskId",t.id);snapshot.put("tool",tool);snapshot.put("arguments",args);snapshot.put("remainingMs",t.rootRemaining);snapshot.put("rounds",a==null?1:a.rounds);snapshot.put("next",a==null?0:a.next);
  try{p.snapshotJson=json.writeValueAsString(snapshot);}catch(Exception e){throw new IllegalStateException("无法保存确认快照");}
  tx.executeWithoutResult(s->pendingRepo.save(p));t.actionId=id;pending.put(id,t);
- Map<String,Object> payload=new LinkedHashMap<>();payload.put("id",id);payload.put("sessionId",t.sessionId);payload.put("expiresAt",p.expiresAt);payload.put("summary","执行工具："+tool.name());payload.put("tool",Map.of("code",tool.code(),"version",tool.version(),"source",tool.config().path("source").asText(),"arguments",ToolExecutionGateway.redact(args)));
+ JsonNode choice=tool.config().path("choice");
+ boolean twoWayChoice=choice.isObject()&&!choice.path("rejectTool").asText("").isBlank();
+ String summary=twoWayChoice?choice.path("prompt").asText("请确认以下操作"):"执行工具："+tool.name();
+ Map<String,Object> payload=new LinkedHashMap<>();payload.put("id",id);payload.put("sessionId",t.sessionId);payload.put("expiresAt",p.expiresAt);payload.put("summary",summary);payload.put("tool",Map.of("code",tool.code(),"version",tool.version(),"source",tool.config().path("source").asText(),"arguments",ToolExecutionGateway.redact(args)));
+ // 二选一时两个按钮各自代表一个业务动作，标成「确认执行/取消操作」会让人以为取消就是什么都不做。
+ if(twoWayChoice){payload.put("confirmLabel",choice.path("confirmLabel").asText("确认"));payload.put("cancelLabel",choice.path("cancelLabel").asText("拒绝"));}
  t.traces.add(new ToolCallRecord(tool.code(),ToolExecutionGateway.redact(args),"等待用户确认",tool.config().path("source").asText(),0,false,tool.id(),tool.version(),"PENDING",tool.config().path("nativeName").asText(null)));
- return outcome(t,"请确认是否执行："+tool.name(),true,payload);
+ return outcome(t,twoWayChoice?summary:"请确认是否执行："+tool.name(),true,payload);
  }
  public TurnOutcome confirm(String id,String sessionId,boolean decision) {
  synchronized(sessionLocks.computeIfAbsent(sessionId,k->new Object())){var session=sessions.getSession(sessionId);if(session==null||session.getStatus().equals("closed"))throw new IllegalStateException("确认会话不可用");var payload=sessions.getConfirmationPayload(session);if(payload==null||!id.equals(payload.get("id")))throw new IllegalStateException("确认已失效，请重新发起");return confirmLocked(id,sessionId,decision);}
@@ -212,11 +217,44 @@ public class ManagedAgentRuntime implements ApplicationRunner {
  pending.remove(id);
  task.traces.removeIf(trace->"PENDING".equals(trace.state()));task.loggedTraces=Math.min(task.loggedTraces,task.traces.size());
  monitor.event(task.sessionId,task.id,decision?"CONFIRMATION_ACCEPTED":"CONFIRMATION_CANCELLED",task.currentCode,Map.of("confirmationId",id));
- if(!decision){TurnOutcome out=outcome(task,"已取消该操作。",false,null);persist(task,out);return out;}
+ if(!decision){TurnOutcome out=rejectOutcome(task);persist(task,out);return out;}
  try{if(task.toolTest){resources.available(task.testTool,true);if(task.testService!=null)resources.available(task.testService,true);}else available(task,true);}
  catch(RuntimeException e){mark(id,"INVALIDATED");invalidatedBudgets.put(task.sessionId,task);TurnOutcome out=outcome(task,"相关版本或启用状态已变化，原确认失效；请在此会话重新发起。已耗预算不会退还。",false,null);persist(task,out);return out;}
  TurnOutcome out=drive(task,true);mark(id,out.answer().startsWith("执行已停止")?"FAILED":"SUCCEEDED");persist(task,out);return out;
  }
+ /**
+  * 用户点了确认卡片的第二个按钮。普通写操作就是「算了」；
+  * 二选一工具（choice.rejectTool）则要把「拒绝」这个业务动作真正执行掉，而不是静默放弃。
+  */
+ private TurnOutcome rejectOutcome(Task t) {
+  try{
+   AgentState a=t.agents.get(t.currentCode);
+   if(a==null||a.calls==null||a.next>=a.calls.size())return outcome(t,"已取消该操作。",false,null);
+   ResourceSnapshot pendingTool=a.resources.tools().get(a.calls.get(a.next).name());
+   if(pendingTool==null)return outcome(t,"已取消该操作。",false,null);
+   String rejectCode=pendingTool.config().path("choice").path("rejectTool").asText("");
+   if(rejectCode.isBlank())return outcome(t,"已取消该操作。",false,null);
+   ResourceSnapshot rejectTool=a.resources.tools().get(rejectCode);
+   if(rejectTool==null)return outcome(t,"已取消该操作。该拒绝动作未被授权给当前 Agent，请联系管理员。",false,null);
+   JsonNode args=arguments(a.calls.get(a.next).arguments());
+   // 用户刚刚在卡片上做出了选择，这一步就是他选的动作，不再要第二次确认。
+   var result=gateway.execute(t.sessionId,rejectTool,null,args,Duration.ofMillis(Math.max(1000,t.rootRemaining)),true,true);
+   t.traces.add(result.trace());
+   logTool(t,result.trace());
+   String answer="已按您的选择处理。";
+   try{JsonNode r=json.readTree(result.content());
+    // 内置工具返回的是 JSON 字符串，框架会再包一层引号，不解开拿到的永远是 TextNode。
+    if(r.isTextual())r=json.readTree(r.asText());
+    if(r.path("message").isTextual()&&!r.path("message").asText().isBlank())answer=r.path("message").asText();
+   }catch(com.fasterxml.jackson.core.JsonProcessingException ignored){}
+   return outcome(t,answer,false,null);
+  }catch(RuntimeException e){
+   // 拒绝动作失败不能把异常抛到前台：如实说明，并留下可追的轨迹。
+   monitor.event(t.sessionId,t.id,"REJECT_ACTION_FAILED",t.currentCode,Map.of("error",String.valueOf(e.getMessage())));
+   return outcome(t,"已记录您的拒绝，但后续处理未能完成，请稍后重试或转人工。",false,null);
+  }
+ }
+
  private void mark(String id,String state){tx.executeWithoutResult(s->{var p=pendingRepo.findById(id).orElseThrow();p.state=state;pendingRepo.save(p);});}
  private TurnOutcome outcome(Task t,String answer,boolean confirm,Map<String,Object> payload) {
  Map<String,Object> diagnostics=new LinkedHashMap<>();diagnostics.put("taskId",t.id);if(t.handoffAvailable||answer.startsWith("执行已停止")){diagnostics.put("handoffAvailable",true);diagnostics.put("handoffReason",t.handoffReason==null?"EXECUTION_FAILED":t.handoffReason);}diagnostics.put("models",List.copyOf(t.modelTrace));diagnostics.put("remainingMs",Math.max(0,t.rootRemaining));diagnostics.put("transfers",t.transfers);Map<String,Object> budgets=new LinkedHashMap<>();t.agents.forEach((code,a)->budgets.put(code,Map.of("toolRounds",a.rounds,"maxToolRounds",a.def.policies().maxToolRounds(),"remainingMs",Math.max(0,a.remaining))));diagnostics.put("agents",budgets);

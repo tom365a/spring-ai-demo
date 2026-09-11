@@ -13,14 +13,27 @@ public class LocalToolCatalog {
 
     public enum SideEffect { READ, WRITE }
 
+    /**
+     * 二选一的展现方式。确认卡片只有两个按钮，把业务上的「同意/拒绝」映射上去：
+     * 确认 = 执行本工具，取消 = 改为执行 {@code rejectTool}。
+     * 不填就是普通的「确认执行/取消操作」。
+     */
+    public record Choice(String prompt, String confirmLabel, String cancelLabel, String rejectTool) {}
+
     public record ToolEntry(
             String code,
             String name,
             String description,
             SideEffect sideEffect,
             String ownerDomain,
-            String methodName
-    ) {}
+            String methodName,
+            Choice choice
+    ) {
+        public ToolEntry(String code, String name, String description, SideEffect sideEffect,
+                         String ownerDomain, String methodName) {
+            this(code, name, description, sideEffect, ownerDomain, methodName, null);
+        }
+    }
 
     private final Map<String, ToolEntry> entries = new LinkedHashMap<>();
 
@@ -45,10 +58,15 @@ public class LocalToolCatalog {
                 "引导用户提供子订单号", SideEffect.READ, "defect", "askForSubOrder"));
         register(new ToolEntry("xcbc_route", "瑕疵补偿路由查询",
                 "查询瑕疵补偿所需路由信息", SideEffect.READ, "defect", "xcbcRoute"));
+        // 它只是把待确认售后单读出来告知用户，不改任何业务状态。标成 WRITE 会让用户先点一次
+        // 「确认执行」才能被问一个问题，白多一道卡片。
         register(new ToolEntry("confirm_as_order_callback", "售后待确认引导",
-                "引导用户确认或拒绝待确认售后单", SideEffect.WRITE, "defect", "confirmAsOrderCallback"));
-        register(new ToolEntry("aggre_as_order_callback", "确认售后回调",
-                "用户确认售后单后的回复", SideEffect.WRITE, "defect", "aggreAsOrderCallback"));
+                "查询并告知待确认的售后单", SideEffect.READ, "defect", "confirmAsOrderCallback"));
+        // 「同意 / 拒绝」是一次二选一，不是「要不要执行」。挂到确认卡片的两个按钮上：
+        // 点同意就执行本工具，点拒绝就改为执行 reject_as_order_callback——用户不需要打字。
+        register(new ToolEntry("aggre_as_order_callback", "确认售后单",
+                "用户确认售后单后的回复", SideEffect.WRITE, "defect", "aggreAsOrderCallback",
+                new Choice("请确认这笔待处理的售后单", "同意", "拒绝", "reject_as_order_callback")));
         register(new ToolEntry("reject_as_order_callback", "拒绝售后回调",
                 "用户拒绝售后单后的回复", SideEffect.WRITE, "defect", "rejectAsOrderCallback"));
         register(new ToolEntry("user_value_router", "用户价值判断",

@@ -265,6 +265,37 @@ agent:seat_y2yz
 
 **还没统一的两处，说清楚：** 瑕疵补偿流程里的子订单确认（`ConfigurableAgentInvoker` 的硬编码分支）和售后单确认（`DefectCompensationTools` 的工具返回文案）**仍然是文字确认**——它们不是文案问题，是机制问题：这两步没有走确认卡片，而是用 `text.contains("确认")` 判断。改成卡片要把这段流水线接进 `ManagedAgentRuntime` 的 pending-Task 确认机制，不是改一句话能解决的。另外 `OrderAgent` / `TicketAgent` / `ConfigurableAgentInvoker` 里那三处「回复「确认」」文案我一并改成了指向按钮，但**这三条路径在当前配置下（`app.agent-config.enabled=true`）是不走的**，改的是死代码的文案。
 
+### 二选一也映射到卡片的两个按钮
+
+写操作的「要不要执行」早就是卡片了，但瑕疵补偿流程里的「同意 / 拒绝售后单」是一次**二选一**，
+现有卡片的语义是「对某一个工具执行 yes/no」，表达不了它，所以一直靠用户打字。
+
+做法是把二选一压到卡片本来就有的两个按钮上，不新增交互形态：
+
+| 项 | 改动 |
+| --- | --- |
+| 工具元数据 | `LocalToolCatalog.ToolEntry` 增加可选 `Choice(prompt, confirmLabel, cancelLabel, rejectTool)`，随 `ResourceBootstrap` 写进工具资源配置 |
+| 卡片渲染 | `ManagedAgentRuntime.pause()` 读到 `choice` 时，把 `confirmLabel`/`cancelLabel` 带进 payload，标题用 `choice.prompt`；前端按 payload 渲染按钮文案，没有就退回「确认执行 / 取消操作」 |
+| 取消分支 | `confirmLocked()` 原来一律回「已取消该操作。」。现在若挂了 `rejectTool`，就用同一份参数执行那个工具——「拒绝」是个真动作，不是静默放弃 |
+| 失败兜底 | 拒绝动作执行失败不把异常抛到前台：回「已记录您的拒绝，但后续处理未能完成」，并落 `REJECT_ACTION_FAILED` 事件 |
+| 提示词 | `agent_defect_comp.md` 改为直接调 `aggre_as_order_callback`，明确不要自己问「同意还是拒绝」、不要自行调 `reject_as_order_callback` |
+
+`aggre_as_order_callback` 的配置：确认=同意，取消=拒绝并执行 `reject_as_order_callback`，线上已发布到 v2。
+
+回归用例（`ResourceRuntimeSelfTest`，用两个 HTTP 端点分别计数，能确切区分执行了哪一个）：
+
+- `twoWayChoiceRendersBothButtonsAndCancelRunsTheRejectTool`——卡片带「同意/拒绝」文案，点拒绝后
+  reject 端点命中 1 次、agree 端点 **0 次**，答复是拒绝工具返回的文案
+- `plainWriteCancelStillDoesNothing`——普通写工具没有 `choice`，payload 不带按钮文案，取消仍然只回
+  「已取消该操作。」且不发起任何请求
+
+**一处没能在现有演示库上生效，说清楚：** `confirm_as_order_callback` 本质是只读的（把待确认售后单读出来告知用户），
+代码里已改成 `READ`，这样新建库只会弹一张卡片。但现有 8080 的库里它是 `WRITE`，而平台有一道
+**刻意的校验**——内置工具的读写风险不允许通过接口降级（`ResourceService`：「内置工具读写风险不可降低或篡改」）。
+这道校验是对的，我没有绕过它。所以在这个已存在的库上，该工具仍会多弹一张卡片；新装环境没有这个问题。
+要在现有库上修正，需要把它从 `defect_comp` 的工具列表里摘掉、删除该资源行、重启让 bootstrap 按新目录重新登记——
+这是对运行中数据库的多步操作，等你确认再做。
+
 ### 5 分钟闲置豁免的实测（带对照组）
 
 | | 排队会话 `s_14159b8eb28a` | 对照组 `s_77d42a61abea`（同样空闲，无坐席分配） |

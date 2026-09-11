@@ -33,8 +33,9 @@ class ResourceRuntimeSelfTest {
  @Autowired com.demo.cs.application.attachment.AttachmentService attachments;
  @Autowired com.demo.cs.infrastructure.persistence.ConversationEventRepository monitorEvents;
  @MockitoBean ResourceModelFactory factory;
- HttpServer server;AtomicInteger writes;ChatModel model;
- @BeforeEach void start()throws Exception {writes=new AtomicInteger();server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);server.createContext("/action",ex->{writes.incrementAndGet();byte[] b="{\"ok\":true}".getBytes();ex.getRequestBody().readAllBytes();ex.getResponseHeaders().add("Content-Type","application/json");ex.sendResponseHeaders(200,b.length);ex.getResponseBody().write(b);ex.close();});server.start();model=mock(ChatModel.class);when(factory.create(any(),anyString(),any())).thenReturn(model);}
+ HttpServer server;AtomicInteger writes;AtomicInteger rejects;ChatModel model;
+ @BeforeEach void start()throws Exception {writes=new AtomicInteger();rejects=new AtomicInteger();server=HttpServer.create(new InetSocketAddress("127.0.0.1",0),0);server.createContext("/action",ex->{writes.incrementAndGet();byte[] b="{\"ok\":true}".getBytes();ex.getRequestBody().readAllBytes();ex.getResponseHeaders().add("Content-Type","application/json");ex.sendResponseHeaders(200,b.length);ex.getResponseBody().write(b);ex.close();});server.createContext("/reject",ex->{rejects.incrementAndGet();byte[] b="{\"ok\":true,\"message\":\"已按您的选择拒绝该单据\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8);ex.getRequestBody().readAllBytes();ex.getResponseHeaders().add("Content-Type","application/json");ex.sendResponseHeaders(200,b.length);ex.getResponseBody().write(b);ex.close();});
+ server.start();model=mock(ChatModel.class);when(factory.create(any(),anyString(),any())).thenReturn(model);}
  @AfterEach void stop(){server.stop(0);}
  String code(){return "r_"+UUID.randomUUID().toString().replace("-","").substring(0,12);}
  String tool(String risk){
@@ -44,6 +45,16 @@ class ResourceRuntimeSelfTest {
  ObjectNode b=json.createObjectNode().put("kind","TOOL").put("code",code()).put("name","自测工具");b.set("config",c);var saved=resources.save(null,b,true);String id=saved.get("id").toString();
  resources.lifecycle(id,"publish",json.createObjectNode().put("impactToken",resources.impact(id,"publish").get("token").toString()));return saved.get("code").toString();
  }
+ /** 带「二选一」元数据的写工具：确认执行自己，取消改为执行 rejectCode。 */
+ String choiceTool(String path,String rejectCode){
+ ObjectNode c=json.createObjectNode().put("source","HTTP").put("sideEffect","WRITE").put("requireConfirm",true).put("method","POST").put("url","http://127.0.0.1:"+server.getAddress().getPort()+path);
+ c.putObject("target").put("scheme","http").put("host","127.0.0.1").put("port",server.getAddress().getPort()).put("allowPrivate",true);
+ c.putObject("auth").put("type","NONE");c.putArray("mappings");c.putObject("inputSchema").put("type","object").putObject("properties");
+ if(rejectCode!=null)c.putObject("choice").put("prompt","请确认这笔待处理的单据").put("confirmLabel","同意").put("cancelLabel","拒绝").put("rejectTool",rejectCode);
+ ObjectNode b=json.createObjectNode().put("kind","TOOL").put("code",code()).put("name","二选一工具");b.set("config",c);var saved=resources.save(null,b,true);String id=saved.get("id").toString();
+ resources.lifecycle(id,"publish",json.createObjectNode().put("impactToken",resources.impact(id,"publish").get("token").toString()));return saved.get("code").toString();
+ }
+
  String agent(List<String> tools,int rounds)throws Exception {
  String code=code();ObjectNode n=json.createObjectNode().put("code",code).put("name","执行自测").put("type","WORKER");
  n.putObject("prompts").put("systemPrompt","测试").put("userPromptTemplate","{{text}}");n.set("tools",json.valueToTree(tools));
@@ -60,6 +71,35 @@ class ResourceRuntimeSelfTest {
  assertThat(done.toolCalls()).anyMatch(t->"SUCCEEDED".equals(t.state())&&t.resourceVersion()!=null);
  assertThat(monitorEvents.findBySessionIdOrderByIdAsc(out.sessionId()).stream().filter(e->e.type.equals("TOOL_RESULT")&&e.dataJson.contains("SUCCEEDED")).count()).isEqualTo(1);
  }
+ @Test void twoWayChoiceRendersBothButtonsAndCancelRunsTheRejectTool()throws Exception {
+ String reject=choiceTool("/reject",null);
+ String agree=choiceTool("/action",reject);
+ String agent=agent(List.of(agree,reject),3);
+ when(model.call(any(Prompt.class))).thenReturn(batch(agree,1),answer());
+
+ var out=runtime.trial(agent,"处理这笔单据",false,false,true);
+ assertThat(out.confirmRequired()).isTrue();
+ // 卡片上两个按钮各代表一个业务动作，文案由工具配置给出，不再是「确认执行/取消操作」。
+ assertThat(out.confirmationPayload()).containsEntry("confirmLabel","同意").containsEntry("cancelLabel","拒绝");
+ assertThat(String.valueOf(out.confirmationPayload().get("summary"))).isEqualTo("请确认这笔待处理的单据");
+ assertThat(writes.get()).isZero();assertThat(rejects.get()).isZero();
+
+ var done=runtime.confirm(out.confirmationPayload().get("id").toString(),out.sessionId(),false);
+ // 点「拒绝」= 真正执行拒绝动作，而不是静默放弃；同意那一侧一次也没被执行。
+ assertThat(rejects.get()).isEqualTo(1);
+ assertThat(writes.get()).isZero();
+ assertThat(done.confirmRequired()).isFalse();
+ assertThat(done.answer()).isEqualTo("已按您的选择拒绝该单据");
+ }
+
+ @Test void plainWriteCancelStillDoesNothing()throws Exception {
+ String tool=tool("WRITE"),agent=agent(List.of(tool),3);when(model.call(any(Prompt.class))).thenReturn(batch(tool,1));
+ var out=runtime.trial(agent,"操作",false,false,true);
+ assertThat(out.confirmationPayload()).doesNotContainKeys("confirmLabel","cancelLabel");
+ var done=runtime.confirm(out.confirmationPayload().get("id").toString(),out.sessionId(),false);
+ assertThat(done.answer()).isEqualTo("已取消该操作。");assertThat(writes.get()).isZero();
+ }
+
  @Test void expiredSessionCannotExecutePendingWrite()throws Exception {
  String tool=tool("WRITE"),agent=agent(List.of(tool),3);when(model.call(any(Prompt.class))).thenReturn(batch(tool,1));var out=runtime.trial(agent,"操作",false,false,true);
  sessions.closeSession(out.sessionId());assertThatThrownBy(()->runtime.confirm(out.confirmationPayload().get("id").toString(),out.sessionId(),true)).isInstanceOf(IllegalStateException.class);assertThat(writes.get()).isZero();
